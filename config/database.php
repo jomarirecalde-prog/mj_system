@@ -97,6 +97,8 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Neon SNI workaround for older libpq clients (e.g. XAMPP)
+            'endpoint' => env('DB_ENDPOINT'),
         ],
 
         'sqlsrv' => [
