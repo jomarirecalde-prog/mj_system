@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
+use App\Models\InventoryItem;
+use App\Models\InventoryTransaction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +15,20 @@ class LoginController extends Controller
 {
     public function showLogin(): View
     {
-        return view('auth.login');
+        $base = InventoryItem::query()->active();
+
+        $landingStats = [
+            'products' => (clone $base)->count(),
+            'stock' => (float) (clone $base)->sum('quantity'),
+            'low_stock' => (clone $base)
+                ->where('inventory_type', InventoryItem::TYPE_CONSUMABLE)
+                ->whereColumn('quantity', '<=', 'reorder_level')
+                ->where('reorder_level', '>', 0)
+                ->count(),
+            'transactions' => InventoryTransaction::query()->count(),
+        ];
+
+        return view('auth.login', compact('landingStats'));
     }
 
     public function login(LoginRequest $request): RedirectResponse

@@ -1,491 +1,510 @@
-@extends('layouts.guest')
+@extends('layouts.landing')
 
-@section('title', 'Sign in')
-@section('body_class', 'login-page')
-@section('guest_wrap_class', 'guest-wrap--login')
-@section('guest_card_class', 'guest-card--login')
+@section('title', 'Home')
+@section('meta_description', 'QR Inventory System — manage products, stock, QR codes, and inventory transactions in one place.')
+@section('body_class', $errors->any() ? 'has-login-errors' : '')
 
 @section('content')
-    <div class="login">
-        <header class="login__header">
-            <div class="login__logo" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+@php
+    $orgName = setting('organization_name', 'QR Inventory System');
+@endphp
+
+<header class="lp-nav" id="lp-nav">
+    <div class="lp-container lp-nav__inner">
+        <a class="lp-nav__brand" href="#home" aria-label="{{ $orgName }} home">
+            <span class="lp-nav__logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm10-2h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm2 2h2v2h-2v-2zm2-2h2v2h-2v-2zm0 4h2v2h-2v-2z"/>
                 </svg>
+            </span>
+            <span class="lp-nav__name">{{ $orgName }}</span>
+        </a>
+
+        <button
+            type="button"
+            class="lp-nav__toggle"
+            id="lp-nav-toggle"
+            aria-controls="lp-nav-panel"
+            aria-expanded="false"
+            aria-label="Open menu"
+        >
+            <span class="lp-nav__toggle-bars" aria-hidden="true">
+                <span></span><span></span><span></span>
+            </span>
+        </button>
+
+        <div class="lp-nav__panel" id="lp-nav-panel">
+            <nav class="lp-nav__desktop" aria-label="Primary">
+                <ul class="lp-nav__links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About System</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#employee-portal">For Employees</a></li>
+                </ul>
+            </nav>
+
+            <div class="lp-nav__actions lp-nav__desktop">
+                @if (Route::has('employee.login'))
+                    <a class="lp-nav__employee" href="{{ route('employee.login') }}">Employee Portal</a>
+                @endif
+                <a class="lp-btn lp-btn--primary lp-btn--sm" href="#login" data-focus-login>Sign In</a>
             </div>
-            <h1 class="login__title">{{ setting('organization_name', 'QR Inventory System') }}</h1>
-            <p class="login__subtitle">Sign in to manage inventory and scan QR codes</p>
-        </header>
 
-        <form method="post" action="{{ route('login') }}" class="login__form" id="login-form">
-            @csrf
+            <div class="lp-nav__panel-actions">
+                <ul class="lp-nav__links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About System</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#employee-portal">For Employees</a></li>
+                </ul>
+                @if (Route::has('employee.login'))
+                    <a class="lp-nav__employee" href="{{ route('employee.login') }}">Employee Portal</a>
+                @endif
+                <a class="lp-btn lp-btn--primary" href="#login" data-focus-login>Sign In</a>
+            </div>
+        </div>
+    </div>
+</header>
 
-            <div class="login__field">
-                <label class="login__label" for="email">Email</label>
-                <div class="login__control @error('email') login__control--invalid @enderror">
-                    <span class="login__icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="5" width="18" height="14" rx="2"/>
-                            <path d="M3 7l9 6 9-6"/>
-                        </svg>
-                    </span>
-                    <input
-                        type="email"
-                        name="email"
-                        id="email"
-                        class="login__input"
-                        value="{{ old('email') }}"
-                        placeholder="Enter your email"
-                        required
-                        autofocus
-                        autocomplete="username"
-                        @error('email') aria-invalid="true" aria-describedby="email-error" @else aria-invalid="false" @enderror
-                    >
+<main id="main-content">
+    {{-- Hero --}}
+    <section class="lp-hero" id="home" aria-labelledby="hero-title">
+        <div class="lp-container lp-hero__grid">
+            <div class="lp-reveal">
+                <span class="lp-badge">Smart Inventory Management</span>
+                <h1 class="lp-hero__title" id="hero-title">Manage Your Inventory Smarter with QR Technology</h1>
+                <p class="lp-hero__text">
+                    A centralized inventory management system designed to make product tracking, stock monitoring, QR code scanning, and inventory transactions faster, easier, and more accurate.
+                </p>
+                <div class="lp-hero__actions">
+                    <a class="lp-btn lp-btn--primary" href="#login" data-focus-login>Sign In</a>
+                    <a class="lp-btn lp-btn--secondary" href="#features">Explore Features</a>
                 </div>
-                @error('email')
-                    <p class="login__error" id="email-error">{{ $message }}</p>
-                @enderror
             </div>
 
-            <div class="login__field">
-                <label class="login__label" for="password">Password</label>
-                <div class="login__control @error('password') login__control--invalid @enderror">
-                    <span class="login__icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="4" y="11" width="16" height="10" rx="2"/>
-                            <path d="M8 11V8a4 4 0 118 0v3"/>
-                        </svg>
-                    </span>
-                    <input
-                        type="password"
-                        name="password"
-                        id="password"
-                        class="login__input"
-                        placeholder="Enter your password"
-                        required
-                        autocomplete="current-password"
-                        @error('password') aria-invalid="true" aria-describedby="password-error" @else aria-invalid="false" @enderror
-                    >
-                    <button
-                        type="button"
-                        class="login__toggle"
-                        id="toggle-password"
-                        aria-label="Show password"
-                        aria-controls="password"
-                        aria-pressed="false"
-                    >
-                        <svg class="login__toggle-icon login__toggle-icon--show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/>
-                            <circle cx="12" cy="12" r="3"/>
-                        </svg>
-                        <svg class="login__toggle-icon login__toggle-icon--hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
-                            <path d="M17.94 17.94A10.94 10.94 0 0112 19c-7 0-11-7-11-7a21.77 21.77 0 015.06-5.94"/>
-                            <path d="M9.9 4.24A10.94 10.94 0 0112 4c7 0 11 7 11 7a21.8 21.8 0 01-2.16 3.19"/>
-                            <path d="M14.12 14.12a3 3 0 01-4.24-4.24"/>
-                            <path d="M1 1l22 22"/>
-                        </svg>
+            <aside class="lp-preview lp-reveal" aria-label="Demo inventory overview preview">
+                <div class="lp-preview__bar">
+                    <span class="lp-preview__dot" aria-hidden="true"></span>
+                    <span class="lp-preview__dot" aria-hidden="true"></span>
+                    <span class="lp-preview__dot" aria-hidden="true"></span>
+                    <span class="lp-preview__label">Inventory Overview</span>
+                </div>
+                <div class="lp-preview__body">
+                    <div class="lp-preview__stats">
+                        <div class="lp-preview__stat">
+                            <span class="lp-preview__stat-label">Products</span>
+                            <div class="lp-preview__stat-value">{{ number_format($landingStats['products']) }}</div>
+                        </div>
+                        <div class="lp-preview__stat">
+                            <span class="lp-preview__stat-label">Available Stock</span>
+                            <div class="lp-preview__stat-value">{{ number_format($landingStats['stock'], $landingStats['stock'] == floor($landingStats['stock']) ? 0 : 2) }}</div>
+                        </div>
+                        <div class="lp-preview__stat">
+                            <span class="lp-preview__stat-label">Low Stock</span>
+                            <div class="lp-preview__stat-value">{{ number_format($landingStats['low_stock']) }}</div>
+                        </div>
+                        <div class="lp-preview__stat">
+                            <span class="lp-preview__stat-label">Transactions</span>
+                            <div class="lp-preview__stat-value">{{ number_format($landingStats['transactions']) }}</div>
+                        </div>
+                    </div>
+                    <div class="lp-preview__scan">
+                        <div class="lp-preview__qr" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm10-2h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm2 2h2v2h-2v-2zm2-2h2v2h-2v-2zm0 4h2v2h-2v-2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <strong>QR Scanner</strong>
+                            <span>Scan item to view details</span>
+                        </div>
+                    </div>
+                    <p class="lp-preview__note">Live inventory snapshot from your database</p>
+                </div>
+            </aside>
+        </div>
+    </section>
+
+    {{-- Features --}}
+    <section class="lp-section lp-section--alt" id="features" aria-labelledby="features-title">
+        <div class="lp-container">
+            <header class="lp-section__header lp-reveal">
+                <p class="lp-section__eyebrow">Features</p>
+                <h2 class="lp-section__title" id="features-title">Everything You Need to Manage Inventory</h2>
+                <p class="lp-section__lead">
+                    The QR Inventory System brings essential inventory operations into one centralized platform, helping organizations keep track of products, quantities, transactions, and QR-coded items.
+                </p>
+            </header>
+
+            <div class="lp-features">
+                <article class="lp-feature lp-reveal">
+                    <div class="lp-feature__icon" aria-hidden="true"><i class="fa-solid fa-boxes-stacked"></i></div>
+                    <h3 class="lp-feature__title">Inventory Management</h3>
+                    <p class="lp-feature__text">Manage products, categories, quantities, and stock information from one centralized system.</p>
+                </article>
+                <article class="lp-feature lp-reveal">
+                    <div class="lp-feature__icon" aria-hidden="true"><i class="fa-solid fa-qrcode"></i></div>
+                    <h3 class="lp-feature__title">QR Code Management</h3>
+                    <p class="lp-feature__text">Assign and scan QR codes to quickly identify inventory items and access their information.</p>
+                </article>
+                <article class="lp-feature lp-reveal">
+                    <div class="lp-feature__icon" aria-hidden="true"><i class="fa-solid fa-chart-simple"></i></div>
+                    <h3 class="lp-feature__title">Stock Monitoring</h3>
+                    <p class="lp-feature__text">Monitor available quantities and identify low-stock items before they become a problem.</p>
+                </article>
+                <article class="lp-feature lp-reveal">
+                    <div class="lp-feature__icon" aria-hidden="true"><i class="fa-solid fa-right-left"></i></div>
+                    <h3 class="lp-feature__title">Transaction Tracking</h3>
+                    <p class="lp-feature__text">Keep track of inventory movements and transactions for better accountability.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    {{-- How it works --}}
+    <section class="lp-section" id="how-it-works" aria-labelledby="how-title">
+        <div class="lp-container">
+            <header class="lp-section__header lp-reveal">
+                <p class="lp-section__eyebrow">Process</p>
+                <h2 class="lp-section__title" id="how-title">How It Works</h2>
+                <p class="lp-section__lead">A simple workflow from registering items to monitoring inventory activity.</p>
+            </header>
+
+            <ol class="lp-steps">
+                <li class="lp-step lp-reveal">
+                    <div class="lp-step__num">01</div>
+                    <h3 class="lp-step__title">Add Inventory</h3>
+                    <p class="lp-step__text">Register products and enter the necessary inventory information.</p>
+                </li>
+                <li class="lp-step lp-reveal">
+                    <div class="lp-step__num">02</div>
+                    <h3 class="lp-step__title">Generate QR Code</h3>
+                    <p class="lp-step__text">Assign a unique QR code to each inventory item.</p>
+                </li>
+                <li class="lp-step lp-reveal">
+                    <div class="lp-step__num">03</div>
+                    <h3 class="lp-step__title">Scan &amp; Manage</h3>
+                    <p class="lp-step__text">Scan the QR code to quickly identify and manage an item.</p>
+                </li>
+                <li class="lp-step lp-reveal">
+                    <div class="lp-step__num">04</div>
+                    <h3 class="lp-step__title">Monitor Inventory</h3>
+                    <p class="lp-step__text">Track quantities, stock movements, and inventory activity.</p>
+                </li>
+            </ol>
+        </div>
+    </section>
+
+    {{-- Benefits --}}
+    <section class="lp-section lp-section--alt" id="benefits" aria-labelledby="benefits-title">
+        <div class="lp-container">
+            <header class="lp-section__header lp-reveal">
+                <p class="lp-section__eyebrow">Benefits</p>
+                <h2 class="lp-section__title" id="benefits-title">Built for Better Inventory Management</h2>
+                <p class="lp-section__lead">Designed to keep inventory work clear, organized, and easier to follow.</p>
+            </header>
+
+            <div class="lp-benefits">
+                <article class="lp-benefit lp-reveal">
+                    <div class="lp-benefit__icon" aria-hidden="true"><i class="fa-solid fa-bolt"></i></div>
+                    <h3 class="lp-benefit__title">Faster</h3>
+                    <p class="lp-benefit__text">Reduce the time required to search and identify inventory items.</p>
+                </article>
+                <article class="lp-benefit lp-reveal">
+                    <div class="lp-benefit__icon" aria-hidden="true"><i class="fa-solid fa-bullseye"></i></div>
+                    <h3 class="lp-benefit__title">More Accurate</h3>
+                    <p class="lp-benefit__text">Reduce manual inventory recording and minimize data-entry errors.</p>
+                </article>
+                <article class="lp-benefit lp-reveal">
+                    <div class="lp-benefit__icon" aria-hidden="true"><i class="fa-solid fa-folder-tree"></i></div>
+                    <h3 class="lp-benefit__title">Organized</h3>
+                    <p class="lp-benefit__text">Keep inventory information centralized and easier to manage.</p>
+                </article>
+                <article class="lp-benefit lp-reveal">
+                    <div class="lp-benefit__icon" aria-hidden="true"><i class="fa-solid fa-route"></i></div>
+                    <h3 class="lp-benefit__title">Traceable</h3>
+                    <p class="lp-benefit__text">Maintain better visibility of inventory transactions and movements.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    {{-- Employee Portal --}}
+    <section class="lp-section" id="employee-portal" aria-labelledby="employee-title">
+        <div class="lp-container">
+            <header class="lp-section__header lp-reveal">
+                <p class="lp-section__eyebrow">Employee Portal</p>
+                <h2 class="lp-section__title" id="employee-title">Built for Employees Too</h2>
+                <p class="lp-section__lead">
+                    Assigned employees can sign in to a separate portal to view attendance, schedules, DTR records, and their personal QR code.
+                </p>
+            </header>
+
+            <div class="lp-employee">
+                <div class="lp-employee__features">
+                    <article class="lp-feature lp-reveal">
+                        <div class="lp-feature__icon" aria-hidden="true"><i class="fa-solid fa-clock"></i></div>
+                        <h3 class="lp-feature__title">Attendance Overview</h3>
+                        <p class="lp-feature__text">See today’s time in/out, status, and a monthly summary of present, late, and absent days.</p>
+                    </article>
+                    <article class="lp-feature lp-reveal">
+                        <div class="lp-feature__icon" aria-hidden="true"><i class="fa-solid fa-calendar-days"></i></div>
+                        <h3 class="lp-feature__title">Schedule &amp; Calendar</h3>
+                        <p class="lp-feature__text">Check your assigned schedule and review attendance on a calendar view.</p>
+                    </article>
+                    <article class="lp-feature lp-reveal">
+                        <div class="lp-feature__icon" aria-hidden="true"><i class="fa-solid fa-file-lines"></i></div>
+                        <h3 class="lp-feature__title">My DTR</h3>
+                        <p class="lp-feature__text">View your daily time record and export or print DTR details when needed.</p>
+                    </article>
+                    <article class="lp-feature lp-reveal">
+                        <div class="lp-feature__icon" aria-hidden="true"><i class="fa-solid fa-qrcode"></i></div>
+                        <h3 class="lp-feature__title">My QR Code</h3>
+                        <p class="lp-feature__text">Access your personal attendance QR code for scanning at check-in points.</p>
+                    </article>
+                    <article class="lp-feature lp-reveal">
+                        <div class="lp-feature__icon" aria-hidden="true"><i class="fa-solid fa-pen-to-square"></i></div>
+                        <h3 class="lp-feature__title">Correction Requests</h3>
+                        <p class="lp-feature__text">Submit DTR correction requests when attendance records need review.</p>
+                    </article>
+                    <article class="lp-feature lp-reveal">
+                        <div class="lp-feature__icon" aria-hidden="true"><i class="fa-solid fa-bell"></i></div>
+                        <h3 class="lp-feature__title">Profile &amp; Alerts</h3>
+                        <p class="lp-feature__text">Update your profile, change your password, and stay informed with notifications.</p>
+                    </article>
+                </div>
+
+                <aside class="lp-employee__overview lp-reveal" aria-label="Employee dashboard overview">
+                    <div class="lp-preview">
+                        <div class="lp-preview__bar">
+                            <span class="lp-preview__dot" aria-hidden="true"></span>
+                            <span class="lp-preview__dot" aria-hidden="true"></span>
+                            <span class="lp-preview__dot" aria-hidden="true"></span>
+                            <span class="lp-preview__label">Employee Overview</span>
+                        </div>
+                        <div class="lp-preview__body">
+                            <div class="lp-employee__today">
+                                <p class="lp-employee__today-label">Today’s Attendance</p>
+                                <ul class="lp-employee__today-list">
+                                    <li><span>Schedule</span><strong>Assigned shift</strong></li>
+                                    <li><span>Time In</span><strong>Recorded on scan</strong></li>
+                                    <li><span>Time Out</span><strong>Recorded on scan</strong></li>
+                                    <li><span>Status</span><strong>Live attendance status</strong></li>
+                                </ul>
+                            </div>
+                            <div class="lp-preview__stats lp-employee__month">
+                                <div class="lp-preview__stat">
+                                    <span class="lp-preview__stat-label">This Month</span>
+                                    <div class="lp-preview__stat-value lp-preview__stat-value--sm">Present</div>
+                                </div>
+                                <div class="lp-preview__stat">
+                                    <span class="lp-preview__stat-label">Tracking</span>
+                                    <div class="lp-preview__stat-value lp-preview__stat-value--sm">Late / Absent</div>
+                                </div>
+                                <div class="lp-preview__stat">
+                                    <span class="lp-preview__stat-label">Hours</span>
+                                    <div class="lp-preview__stat-value lp-preview__stat-value--sm">Undertime / OT</div>
+                                </div>
+                                <div class="lp-preview__stat">
+                                    <span class="lp-preview__stat-label">Total</span>
+                                    <div class="lp-preview__stat-value lp-preview__stat-value--sm">Worked hours</div>
+                                </div>
+                            </div>
+                            <p class="lp-preview__note">Shows what employees see after signing in to the portal</p>
+                        </div>
+                    </div>
+
+                    @if (Route::has('employee.login'))
+                        <div class="lp-employee__cta">
+                            <a class="lp-btn lp-btn--secondary" href="{{ route('employee.login') }}">
+                                Sign in to Employee Portal
+                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    @endif
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    {{-- About --}}
+    <section class="lp-section lp-section--alt" id="about" aria-labelledby="about-title">
+        <div class="lp-container lp-about">
+            <header class="lp-reveal">
+                <p class="lp-section__eyebrow">About System</p>
+                <h2 class="lp-section__title" id="about-title">What is the QR Inventory System?</h2>
+                <p class="lp-section__lead" style="margin-top:0.75rem;">
+                    A practical platform for organizations that need clear control over products, stock, QR-coded items, and employee attendance self-service.
+                </p>
+            </header>
+            <div class="lp-about__card lp-reveal">
+                <p>
+                    The QR Inventory System is designed to simplify inventory management by combining product management, QR code identification, stock monitoring, and transaction tracking in one centralized platform. Employees with portal access can also monitor attendance, schedules, and DTR records separately from the inventory dashboard.
+                </p>
+                <ul class="lp-about__list" style="margin-top:1.25rem;">
+                    <li><i class="fa-solid fa-check" aria-hidden="true"></i><span>Built for staff, admins, and inventory teams</span></li>
+                    <li><i class="fa-solid fa-check" aria-hidden="true"></i><span>Supports QR scanning for faster item lookup</span></li>
+                    <li><i class="fa-solid fa-check" aria-hidden="true"></i><span>Includes an employee portal for attendance and DTR self-service</span></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    {{-- Login --}}
+    <section class="lp-section lp-login" id="login" aria-labelledby="login-title">
+        <div class="lp-container lp-login__grid">
+            <div class="lp-login__copy lp-reveal">
+                <p class="lp-section__eyebrow">Access</p>
+                <h2 class="lp-section__title" id="login-title">Ready to manage your inventory?</h2>
+                <p class="lp-section__lead">
+                    Sign in to access your inventory dashboard, manage products, monitor stock, and track inventory activity.
+                </p>
+                <ul class="lp-login__checks">
+                    <li><i class="fa-solid fa-check" aria-hidden="true"></i> Manage inventory</li>
+                    <li><i class="fa-solid fa-check" aria-hidden="true"></i> Scan QR codes</li>
+                    <li><i class="fa-solid fa-check" aria-hidden="true"></i> Monitor stock</li>
+                </ul>
+            </div>
+
+            <div class="lp-login__panel lp-reveal">
+                <h3 class="lp-login__panel-title">Sign in to the Inventory System</h3>
+                <p class="lp-login__panel-sub">Access your inventory management dashboard using your registered account.</p>
+
+                @if (session('success'))
+                    <div class="lp-alert lp-alert--success" role="status">{{ session('success') }}</div>
+                @endif
+                @if (session('error'))
+                    <div class="lp-alert" role="alert">{{ session('error') }}</div>
+                @endif
+
+                @if ($errors->any())
+                    <div class="lp-alert" role="alert">
+                        <div>
+                            <strong>Unable to sign in</strong>
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                @endif
+
+                <form method="post" action="{{ route('login') }}" class="lp-login__form" id="login-form" novalidate>
+                    @csrf
+
+                    <div class="lp-field">
+                        <label class="lp-label" for="email">Email</label>
+                        <div class="lp-control @error('email') lp-control--invalid @enderror">
+                            <span class="lp-control__icon" aria-hidden="true"><i class="fa-regular fa-envelope"></i></span>
+                            <input
+                                type="email"
+                                name="email"
+                                id="email"
+                                class="lp-input"
+                                value="{{ old('email') }}"
+                                placeholder="Enter your email"
+                                required
+                                autocomplete="username"
+                                @error('email') aria-invalid="true" aria-describedby="email-error" @else aria-invalid="false" @enderror
+                            >
+                        </div>
+                        @error('email')
+                            <p class="lp-error" id="email-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="lp-field">
+                        <label class="lp-label" for="password">Password</label>
+                        <div class="lp-control @error('password') lp-control--invalid @enderror">
+                            <span class="lp-control__icon" aria-hidden="true"><i class="fa-solid fa-lock"></i></span>
+                            <input
+                                type="password"
+                                name="password"
+                                id="password"
+                                class="lp-input"
+                                placeholder="Enter your password"
+                                required
+                                autocomplete="current-password"
+                                @error('password') aria-invalid="true" aria-describedby="password-error" @else aria-invalid="false" @enderror
+                            >
+                            <button
+                                type="button"
+                                class="lp-toggle"
+                                id="toggle-password"
+                                aria-label="Show password"
+                                aria-controls="password"
+                                aria-pressed="false"
+                            >
+                                <i class="fa-regular fa-eye lp-toggle__show" aria-hidden="true"></i>
+                                <i class="fa-regular fa-eye-slash lp-toggle__hide" aria-hidden="true" hidden></i>
+                            </button>
+                        </div>
+                        @error('password')
+                            <p class="lp-error" id="password-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="lp-meta">
+                        <label class="lp-remember" for="remember">
+                            <input
+                                type="checkbox"
+                                name="remember"
+                                id="remember"
+                                value="1"
+                                {{ old('remember') ? 'checked' : '' }}
+                            >
+                            <span>Remember me</span>
+                        </label>
+
+                        @if (Route::has('employee.password.request'))
+                            <a class="lp-forgot" href="{{ route('employee.password.request') }}">Forgot password?</a>
+                        @endif
+                    </div>
+
+                    <button type="submit" class="lp-submit" id="login-submit">
+                        <span class="lp-submit-idle">Sign in</span>
+                        <span class="lp-submit-loading" aria-hidden="true">
+                            <span class="lp-spinner" aria-hidden="true"></span>
+                            Signing in...
+                        </span>
                     </button>
-                </div>
-                @error('password')
-                    <p class="login__error" id="password-error">{{ $message }}</p>
-                @enderror
-            </div>
+                </form>
 
-            <div class="login__meta">
-                <label class="login__remember" for="remember">
-                    <input
-                        type="checkbox"
-                        name="remember"
-                        id="remember"
-                        value="1"
-                        {{ old('remember') ? 'checked' : '' }}
-                    >
-                    <span>Remember me</span>
-                </label>
-
-                @if (Route::has('password.request'))
-                    <a class="login__forgot" href="{{ route('password.request') }}">Forgot password?</a>
+                @if (Route::has('employee.login'))
+                    <p class="lp-employee-link">
+                        Are you an employee?
+                        <a href="{{ route('employee.login') }}">Sign in to Employee Portal →</a>
+                    </p>
                 @endif
             </div>
+        </div>
+    </section>
+</main>
 
-            <button type="submit" class="login__submit" id="login-submit">
-                <span class="login__submit-idle">Sign in</span>
-                <span class="login__submit-loading" aria-hidden="true">
-                    <span class="login__spinner" aria-hidden="true"></span>
-                    Signing in...
-                </span>
-            </button>
-        </form>
-
-        <p class="login__footer">
-            © {{ date('Y') }} {{ setting('organization_name', 'QR Inventory System') }}
-        </p>
+<footer class="lp-footer">
+    <div class="lp-container">
+        <div class="lp-footer__top">
+            <a class="lp-footer__brand" href="#home">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm10-2h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm2 2h2v2h-2v-2zm2-2h2v2h-2v-2zm0 4h2v2h-2v-2z"/>
+                </svg>
+                {{ $orgName }}
+            </a>
+            <ul class="lp-footer__links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#employee-portal">For Employees</a></li>
+                <li><a href="#login" data-focus-login>Sign In</a></li>
+                @if (Route::has('employee.login'))
+                    <li><a href="{{ route('employee.login') }}">Employee Portal</a></li>
+                @endif
+            </ul>
+        </div>
+        <p class="lp-footer__copy">© {{ date('Y') }} {{ $orgName }}. All rights reserved.</p>
     </div>
+</footer>
 @endsection
-
-@push('styles')
-<style>
-    .login-page .guest-wrap--login {
-        background: #f8fafc;
-        padding: 1.5rem 1rem;
-        overflow-x: hidden;
-    }
-
-    .login-page .guest-card--login {
-        max-width: 420px;
-        width: 100%;
-        padding: 2rem 1.75rem 1.5rem;
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
-    }
-
-    /* Keep flash messages; hide duplicate validation list from layout alerts */
-    .login-page .guest-card--login > .alert {
-        margin-bottom: 1rem;
-    }
-
-    .login-page .guest-card--login > .alert.alert--error:has(ul) {
-        display: none;
-    }
-
-    .login {
-        color: #111827;
-    }
-
-    .login__header {
-        text-align: center;
-        margin-bottom: 1.75rem;
-    }
-
-    .login__logo {
-        width: 40px;
-        height: 40px;
-        margin: 0 auto 0.75rem;
-        border-radius: 10px;
-        border: 1px solid #e5e7eb;
-        background: #f8fafc;
-        color: #2563eb;
-        display: grid;
-        place-items: center;
-    }
-
-    .login__title {
-        margin: 0 0 0.35rem;
-        font-family: var(--font-display);
-        font-size: 1.25rem;
-        font-weight: 600;
-        line-height: 1.3;
-        color: #111827;
-        text-align: center;
-    }
-
-    .login__subtitle {
-        margin: 0;
-        font-size: 0.875rem;
-        line-height: 1.45;
-        color: #6b7280;
-    }
-
-    .login__form {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .login__field {
-        display: flex;
-        flex-direction: column;
-        gap: 0.375rem;
-    }
-
-    .login__label {
-        font-size: 0.8125rem;
-        font-weight: 600;
-        color: #111827;
-    }
-
-    .login__control {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        min-height: 48px;
-        padding: 0 0.75rem;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        background: #ffffff;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .login__control:focus-within {
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-    }
-
-    .login__control--invalid {
-        border-color: #dc2626;
-    }
-
-    .login__control--invalid:focus-within {
-        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
-    }
-
-    .login__icon {
-        display: grid;
-        place-items: center;
-        color: #9ca3af;
-        flex-shrink: 0;
-    }
-
-    .login__icon svg {
-        width: 18px;
-        height: 18px;
-    }
-
-    .login__input {
-        width: 100%;
-        min-width: 0;
-        min-height: 46px;
-        border: 0;
-        outline: none;
-        background: transparent;
-        font-family: inherit;
-        font-size: 0.9375rem;
-        color: #111827;
-        padding: 0;
-    }
-
-    .login__input::placeholder {
-        color: #9ca3af;
-    }
-
-    .login__toggle {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        margin-right: -0.25rem;
-        border: 0;
-        border-radius: 8px;
-        background: transparent;
-        color: #6b7280;
-        cursor: pointer;
-        flex-shrink: 0;
-    }
-
-    .login__toggle:hover,
-    .login__toggle:focus-visible {
-        color: #2563eb;
-        background: #eff6ff;
-        outline: none;
-    }
-
-    .login__toggle:focus-visible {
-        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
-    }
-
-    .login__toggle-icon {
-        width: 18px;
-        height: 18px;
-    }
-
-    .login__error {
-        margin: 0;
-        font-size: 0.8125rem;
-        color: #dc2626;
-    }
-
-    .login__meta {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-        margin-top: -0.15rem;
-    }
-
-    .login__remember {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-        color: #111827;
-        cursor: pointer;
-        user-select: none;
-    }
-
-    .login__remember input {
-        width: 16px;
-        height: 16px;
-        margin: 0;
-        accent-color: #2563eb;
-        cursor: pointer;
-    }
-
-    .login__forgot {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: #2563eb;
-        text-decoration: none;
-    }
-
-    .login__forgot:hover {
-        color: #1d4ed8;
-        text-decoration: underline;
-    }
-
-    .login__submit {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        min-height: 48px;
-        margin-top: 0.25rem;
-        padding: 0.75rem 1rem;
-        border: 1px solid #2563eb;
-        border-radius: 10px;
-        background: #2563eb;
-        color: #ffffff;
-        font-family: inherit;
-        font-size: 0.9375rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.15s ease, border-color 0.15s ease;
-    }
-
-    .login__submit:hover {
-        background: #1d4ed8;
-        border-color: #1d4ed8;
-    }
-
-    .login__submit:active {
-        background: #1e40af;
-        border-color: #1e40af;
-    }
-
-    .login__submit:focus-visible {
-        outline: 2px solid #93c5fd;
-        outline-offset: 2px;
-    }
-
-    .login__submit.is-loading,
-    .login__submit:disabled {
-        opacity: 0.85;
-        cursor: wait;
-        pointer-events: none;
-    }
-
-    .login__submit-idle {
-        display: inline-flex;
-    }
-
-    .login__submit-loading {
-        display: none;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .login__submit.is-loading .login__submit-idle {
-        display: none;
-    }
-
-    .login__submit.is-loading .login__submit-loading {
-        display: inline-flex;
-    }
-
-    .login__spinner {
-        width: 14px;
-        height: 14px;
-        border: 2px solid rgba(255, 255, 255, 0.35);
-        border-top-color: #ffffff;
-        border-radius: 50%;
-        animation: login-spin 0.7s linear infinite;
-    }
-
-    @keyframes login-spin {
-        to { transform: rotate(360deg); }
-    }
-
-    .login__footer {
-        margin: 1.5rem 0 0;
-        text-align: center;
-        font-size: 0.75rem;
-        color: #9ca3af;
-    }
-
-    @media (max-width: 480px) {
-        .login-page .guest-wrap--login {
-            padding: 1rem 0.75rem;
-            align-items: flex-start;
-        }
-
-        .login-page .guest-card--login {
-            padding: 1.5rem 1.15rem 1.25rem;
-            border-radius: 10px;
-        }
-
-        .login__title {
-            font-size: 1.125rem;
-        }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        .login__spinner {
-            animation: none;
-            opacity: 0.9;
-        }
-
-        .login__control,
-        .login__submit {
-            transition: none;
-        }
-    }
-</style>
-@endpush
-
-@push('scripts')
-<script>
-(function () {
-    var form = document.getElementById('login-form');
-    var submitBtn = document.getElementById('login-submit');
-    var toggleBtn = document.getElementById('toggle-password');
-    var passwordInput = document.getElementById('password');
-
-    if (toggleBtn && passwordInput) {
-        var showIcon = toggleBtn.querySelector('.login__toggle-icon--show');
-        var hideIcon = toggleBtn.querySelector('.login__toggle-icon--hide');
-
-        toggleBtn.addEventListener('click', function () {
-            var revealing = passwordInput.getAttribute('type') === 'password';
-            passwordInput.setAttribute('type', revealing ? 'text' : 'password');
-            toggleBtn.setAttribute('aria-pressed', revealing ? 'true' : 'false');
-            toggleBtn.setAttribute('aria-label', revealing ? 'Hide password' : 'Show password');
-
-            if (showIcon && hideIcon) {
-                showIcon.hidden = revealing;
-                hideIcon.hidden = !revealing;
-            }
-        });
-    }
-
-    if (form && submitBtn) {
-        form.addEventListener('submit', function () {
-            if (submitBtn.classList.contains('is-loading')) {
-                return;
-            }
-
-            submitBtn.disabled = true;
-            submitBtn.classList.add('is-loading');
-            submitBtn.setAttribute('aria-busy', 'true');
-
-            var loading = submitBtn.querySelector('.login__submit-loading');
-            if (loading) {
-                loading.removeAttribute('aria-hidden');
-            }
-        });
-    }
-})();
-</script>
-@endpush
