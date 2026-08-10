@@ -16,6 +16,6 @@
         <button type="submit" class="btn btn--primary btn--block">Send reset link</button>
     </form>
     <p class="text-muted" style="margin-top:1rem;text-align:center;font-size:.9rem;">
-        <a href="{{ route('employee.login') }}">Back to sign in</a>
+        <a href="{{ route('login') }}">Back to sign in</a>
     </p>
 @endsection

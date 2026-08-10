@@ -11,9 +11,9 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     @stack('styles')
 </head>
-<body>
-<div class="guest-wrap">
-    <div class="guest-card">
+<body class="@yield('body_class')">
+<div class="guest-wrap @yield('guest_wrap_class')">
+    <div class="guest-card @yield('guest_card_class')">
         @include('partials.flash')
         @include('partials.alerts')
         @yield('content')

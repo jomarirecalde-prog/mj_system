@@ -50,8 +50,6 @@ Route::middleware('guest')->group(function (): void {
     Route::post('login', [LoginController::class, 'login']);
 
     Route::prefix('employee')->name('employee.')->group(function (): void {
-            Route::get('login', [EmployeeLoginController::class, 'showLogin'])->name('login');
-        Route::post('login', [EmployeeLoginController::class, 'login'])->name('login.submit');
         Route::get('forgot-password', [EmployeeLoginController::class, 'showForgotPassword'])->name('password.request');
         Route::post('forgot-password', [EmployeeLoginController::class, 'sendResetLink'])->name('password.email');
         Route::get('reset-password/{token}', [EmployeeLoginController::class, 'showResetPassword'])->name('password.reset');
