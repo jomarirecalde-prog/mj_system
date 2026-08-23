@@ -1,15 +1,16 @@
 @php
     $isEdit = isset($station) && $station !== null;
+    $showExtendedFields = $showExtendedFields ?? $isEdit;
 @endphp
 
 <div class="form-group">
     <label class="form-label" for="{{ $isEdit ? 'edit_' : '' }}station_name">Station Name <span class="text-danger">*</span></label>
-    <input type="text" name="station_name" id="{{ $isEdit ? 'edit_' : '' }}station_name" class="form-control" value="{{ old('station_name', $station->station_name ?? '') }}" required maxlength="255" placeholder="Main Entrance Scanner">
+    <input type="text" name="station_name" id="{{ $isEdit ? 'edit_' : '' }}station_name" class="form-control" value="{{ old('station_name', $station->station_name ?? '') }}" required maxlength="255" placeholder="Branch">
 </div>
 
 <div class="form-group">
     <label class="form-label" for="{{ $isEdit ? 'edit_' : '' }}station_code">Station ID <span class="text-danger">*</span></label>
-    <input type="text" name="station_code" id="{{ $isEdit ? 'edit_' : '' }}station_code" class="form-control" value="{{ old('station_code', $station->station_code ?? '') }}" required maxlength="100" placeholder="WPU-STATION-001" style="text-transform:uppercase">
+    <input type="text" name="station_code" id="{{ $isEdit ? 'edit_' : '' }}station_code" class="form-control" value="{{ old('station_code', $station->station_code ?? '') }}" required maxlength="100" placeholder="STATION-001" style="text-transform:uppercase">
     <p class="form-hint">Must be unique. Stored in uppercase.</p>
 </div>
 
@@ -27,7 +28,7 @@
 
 <div class="form-group">
     <label class="form-label" for="{{ $isEdit ? 'edit_' : '' }}location">Location <span class="text-danger">*</span></label>
-    <input type="text" name="location" id="{{ $isEdit ? 'edit_' : '' }}location" class="form-control" value="{{ old('location', $station->location ?? '') }}" required maxlength="255" placeholder="Main Campus - Main Entrance">
+    <input type="text" name="location" id="{{ $isEdit ? 'edit_' : '' }}location" class="form-control" value="{{ old('location', $station->location ?? '') }}" required maxlength="255" placeholder="Branch">
 </div>
 
 <div class="form-group">
@@ -35,6 +36,7 @@
     <textarea name="description" id="{{ $isEdit ? 'edit_' : '' }}description" class="form-control" rows="2" maxlength="2000">{{ old('description', $station->description ?? '') }}</textarea>
 </div>
 
+@if($showExtendedFields)
 <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
     <div class="form-group">
         <label class="form-label" for="{{ $isEdit ? 'edit_' : '' }}building">Assigned Building</label>
@@ -56,6 +58,7 @@
         <input type="text" name="timezone" id="{{ $isEdit ? 'edit_' : '' }}timezone" class="form-control" value="{{ old('timezone', $station->timezone ?? 'Asia/Manila') }}" maxlength="64">
     </div>
 </div>
+@endif
 
 <div class="form-group">
     <label class="form-label" for="{{ $isEdit ? 'edit_' : '' }}status">Status</label>
@@ -65,8 +68,10 @@
     </select>
 </div>
 
+@if($showExtendedFields)
 <datalist id="department-suggestions">
     @foreach(($departments ?? collect()) as $dept)
         <option value="{{ $dept }}">
     @endforeach
 </datalist>
+@endif

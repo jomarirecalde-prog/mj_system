@@ -380,6 +380,123 @@
     });
   }
 
+  /* Logout confirmation — intercept all .logout-form submissions */
+  function initLogoutConfirmation() {
+    const modal = document.getElementById('logout-confirmation-modal');
+    const dialog = modal?.querySelector('.logout-modal__dialog');
+    const cancelBtn = document.getElementById('logout-modal-cancel');
+    const confirmBtn = document.getElementById('logout-modal-confirm');
+    const confirmText = confirmBtn?.querySelector('.logout-modal__confirm-text');
+    const confirmSpinner = confirmBtn?.querySelector('.logout-modal__spinner');
+    if (!modal || !cancelBtn || !confirmBtn || !confirmText) return;
+
+    let pendingForm = null;
+    let triggerButton = null;
+    let isSubmitting = false;
+
+    const focusables = () => [cancelBtn, confirmBtn];
+
+    const closeAccountMenu = () => {
+      const dropdown = document.getElementById('account-menu-dropdown');
+      const trigger = document.getElementById('account-menu-trigger');
+      if (dropdown && !dropdown.hidden) {
+        dropdown.hidden = true;
+        trigger?.setAttribute('aria-expanded', 'false');
+      }
+    };
+
+    const open = (form, button) => {
+      pendingForm = form;
+      triggerButton = button;
+      isSubmitting = false;
+      cancelBtn.disabled = false;
+      confirmBtn.disabled = false;
+      confirmBtn.classList.remove('is-loading');
+      confirmText.textContent = 'Sign Out';
+      confirmSpinner?.setAttribute('hidden', '');
+      closeAccountMenu();
+      modal.removeAttribute('hidden');
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('logout-modal-open');
+      cancelBtn.focus();
+    };
+
+    const close = () => {
+      if (isSubmitting) return;
+      modal.classList.remove('is-open');
+      modal.setAttribute('hidden', '');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('logout-modal-open');
+      pendingForm = null;
+      if (triggerButton) {
+        triggerButton.focus();
+        triggerButton = null;
+      }
+    };
+
+    document.querySelectorAll('form.logout-form').forEach((form) => {
+      form.addEventListener('submit', (e) => {
+        if (form.dataset.logoutConfirmed === '1') return;
+        e.preventDefault();
+        if (isSubmitting) return;
+        const button = e.submitter || form.querySelector('[type="submit"]');
+        open(form, button);
+      });
+    });
+
+    cancelBtn.addEventListener('click', close);
+
+    confirmBtn.addEventListener('click', () => {
+      if (!pendingForm || isSubmitting) return;
+      isSubmitting = true;
+      cancelBtn.disabled = true;
+      confirmBtn.disabled = true;
+      confirmBtn.classList.add('is-loading');
+      confirmText.textContent = 'Signing out...';
+      confirmSpinner?.removeAttribute('hidden');
+      pendingForm.dataset.logoutConfirmed = '1';
+      pendingForm.submit();
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal && !isSubmitting) close();
+    });
+
+    modal.addEventListener('keydown', (e) => {
+      if (!modal.classList.contains('is-open')) return;
+
+      if (e.key === 'Escape' && !isSubmitting) {
+        e.preventDefault();
+        close();
+        return;
+      }
+
+      if (e.key !== 'Tab') return;
+
+      const items = focusables();
+      const index = items.indexOf(document.activeElement);
+      if (index === -1) return;
+
+      if (e.shiftKey) {
+        if (index === 0) {
+          e.preventDefault();
+          items[items.length - 1].focus();
+        }
+      } else if (index === items.length - 1) {
+        e.preventDefault();
+        items[0].focus();
+      }
+    });
+
+    dialog?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('is-open') && !isSubmitting) {
+        e.preventDefault();
+        close();
+      }
+    });
+  }
+
   /* Live search helper */
   function bindLiveSearch(inputSelector, onSearch) {
     const input = document.querySelector(inputSelector);
@@ -400,6 +517,7 @@
     initAccountMenu();
     initNotificationBadge();
     initConfirmForms();
+    initLogoutConfirmation();
 
     document.querySelectorAll('[data-toast]').forEach((el) => {
       toast(el.textContent.trim(), el.dataset.toastType || 'info');

@@ -13,6 +13,9 @@
 </head>
 <body class="station-body">
 @yield('content')
+
+@include('partials.logout-confirmation-modal')
+
 <script src="{{ asset('js/app.js') }}"></script>
 @stack('scripts')
 </body>

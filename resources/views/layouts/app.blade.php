@@ -363,7 +363,7 @@
                             Account Settings
                         </a>
                     @endif
-                    <form action="{{ route('logout') }}" method="post" class="account-menu__logout">
+                    <form action="{{ route('logout') }}" method="post" class="account-menu__logout logout-form">
                         @csrf
                         <button type="submit" class="account-menu__item account-menu__item--danger" role="menuitem">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
@@ -383,6 +383,8 @@
 </div>
 
 <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+@include('partials.logout-confirmation-modal')
 
 <script src="{{ asset('js/app.js') }}"></script>
 @stack('scripts')

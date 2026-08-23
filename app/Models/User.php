@@ -23,6 +23,9 @@ class User extends Authenticatable implements CanResetPasswordContract
         'employee_id',
         'name',
         'full_name',
+        'first_name',
+        'middle_name',
+        'last_name',
         'email',
         'department',
         'position',
@@ -105,7 +108,21 @@ class User extends Authenticatable implements CanResetPasswordContract
 
     public function displayName(): string
     {
+        $composed = self::composeFullName($this->first_name, $this->middle_name, $this->last_name);
+        if ($composed !== '') {
+            return $composed;
+        }
+
         return $this->full_name ?: $this->name;
+    }
+
+    public static function composeFullName(?string $firstName, ?string $middleName, ?string $lastName): string
+    {
+        return trim(implode(' ', array_filter([
+            trim((string) $firstName),
+            trim((string) $middleName),
+            trim((string) $lastName),
+        ], fn (string $part) => $part !== '')));
     }
 
     public function canAccessAttendance(): bool

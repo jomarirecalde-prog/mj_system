@@ -169,6 +169,14 @@
 </style>
 @endpush
 
+@php
+    $editFormTemplate = view('admin.qr-stations._form', [
+        'station' => null,
+        'showExtendedFields' => true,
+        'departments' => $departments,
+    ])->render();
+@endphp
+
 @push('scripts')
 <script>
 (function () {
@@ -176,7 +184,7 @@
     const editModal = document.getElementById('edit-station-modal');
     const editForm = document.getElementById('edit-station-form');
     const editBody = document.getElementById('edit-station-body');
-    const formTemplate = @json(view('admin.qr-stations._form', ['station' => null])->render());
+    const formTemplate = @json($editFormTemplate);
 
     document.getElementById('open-create-station')?.addEventListener('click', () => createModal.showModal());
 

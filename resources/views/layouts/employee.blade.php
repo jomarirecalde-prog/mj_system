@@ -56,7 +56,7 @@
                 <span class="topbar__avatar">{{ strtoupper(substr($user->displayName(), 0, 1)) }}</span>
                 <span>{{ $user->displayName() }}</span>
             </div>
-            <form action="{{ route('employee.logout') }}" method="post" class="mb-0">
+            <form action="{{ route('employee.logout') }}" method="post" class="mb-0 logout-form">
                 @csrf
                 <button type="submit" class="btn btn--ghost btn--sm">Logout</button>
             </form>
@@ -71,6 +71,9 @@
 </div>
 
 <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+@include('partials.logout-confirmation-modal')
+
 <script src="{{ asset('js/app.js') }}"></script>
 @stack('scripts')
 </body>

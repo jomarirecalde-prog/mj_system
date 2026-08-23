@@ -1010,9 +1010,11 @@ body.sidebar-is-collapsed .app-main {
 }
 
 .form-grid--1 { grid-template-columns: 1fr; }
+.form-grid--3 { grid-template-columns: repeat(3, 1fr); }
 
 @media (max-width: 640px) {
   .form-grid { grid-template-columns: 1fr; }
+  .form-grid--3 { grid-template-columns: 1fr; }
 }
 
 .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
@@ -1573,6 +1575,81 @@ body.sidebar-mobile-open {
 }
 
 .modal__title { margin-bottom: 1rem; }
+
+/* Logout confirmation modal */
+.logout-modal {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.logout-modal.is-open {
+  display: flex;
+  opacity: 1;
+  visibility: visible;
+}
+
+.logout-modal__dialog {
+  text-align: center;
+  padding: 1.5rem 1.25rem 1.25rem;
+  transform: scale(0.97) translateY(6px);
+  transition: transform 0.2s ease;
+}
+
+.logout-modal.is-open .logout-modal__dialog {
+  transform: scale(1) translateY(0);
+}
+
+.logout-modal__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: 0 auto 0.85rem;
+  border-radius: 999px;
+  background: rgba(185, 28, 28, 0.08);
+  color: var(--danger);
+}
+
+.logout-modal__title {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.logout-modal__message {
+  margin: 0 0 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.logout-modal__actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.logout-modal__actions .btn {
+  min-width: 6.5rem;
+}
+
+.logout-modal__spinner {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.spinner--inline {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+body.logout-modal-open {
+  overflow: hidden;
+}
 
 .text-muted { color: var(--muted); }
 .text-right { text-align: right; }

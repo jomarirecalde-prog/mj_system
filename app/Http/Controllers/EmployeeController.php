@@ -34,6 +34,9 @@ class EmployeeController extends Controller
                 $term = '%'.$request->search.'%';
                 $q->where(function ($inner) use ($term) {
                     $inner->where('full_name', 'like', $term)
+                        ->orWhere('first_name', 'like', $term)
+                        ->orWhere('middle_name', 'like', $term)
+                        ->orWhere('last_name', 'like', $term)
                         ->orWhere('name', 'like', $term)
                         ->orWhere('employee_id', 'like', $term)
                         ->orWhere('email', 'like', $term)
@@ -73,8 +76,9 @@ class EmployeeController extends Controller
         $this->authorizeRoles(['admin']);
 
         $data = $request->validate([
-            'employee_id' => ['required', 'string', 'max:50', 'unique:users,employee_id'],
-            'full_name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:100'],
+            'middle_name' => ['nullable', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
             'department' => ['required', 'string', 'max:255'],
             'position' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
@@ -89,11 +93,16 @@ class EmployeeController extends Controller
         ]);
 
         $allowLogin = $request->boolean('allow_login');
-        $fullName = trim($data['full_name']);
+        $firstName = trim($data['first_name']);
+        $middleName = isset($data['middle_name']) ? trim($data['middle_name']) : null;
+        $middleName = $middleName !== '' ? $middleName : null;
+        $lastName = trim($data['last_name']);
+        $fullName = User::composeFullName($firstName, $middleName, $lastName);
+        $employeeId = $this->suggestEmployeeId();
 
         $email = $allowLogin && ! empty($data['email'])
             ? $data['email']
-            : $this->makeInternalEmail($data['employee_id']);
+            : $this->makeInternalEmail($employeeId);
 
         $password = $allowLogin && ! empty($data['password'])
             ? $data['password']
@@ -103,11 +112,14 @@ class EmployeeController extends Controller
             ? ($data['role'] ?? 'employee')
             : 'employee';
 
-        $employee = DB::transaction(function () use ($data, $fullName, $email, $password, $role, $request) {
+        $employee = DB::transaction(function () use ($data, $firstName, $middleName, $lastName, $fullName, $employeeId, $email, $password, $role, $request) {
             $employee = User::query()->create([
-                'employee_id' => strtoupper(trim($data['employee_id'])),
+                'employee_id' => $employeeId,
+                'first_name' => $firstName,
+                'middle_name' => $middleName,
+                'last_name' => $lastName,
                 'full_name' => $fullName,
-                'name' => $this->makeUsername($fullName, $data['employee_id']),
+                'name' => $this->makeUsername($fullName, $employeeId),
                 'email' => $email,
                 'department' => $data['department'],
                 'position' => $data['position'] ?? null,
@@ -171,7 +183,9 @@ class EmployeeController extends Controller
 
         $data = $request->validate([
             'employee_id' => ['required', 'string', 'max:50', Rule::unique('users', 'employee_id')->ignore($employee->id)],
-            'full_name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:100'],
+            'middle_name' => ['nullable', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
             'department' => ['required', 'string', 'max:255'],
             'position' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
@@ -183,11 +197,20 @@ class EmployeeController extends Controller
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $previous = $employee->only(['employee_id', 'full_name', 'department', 'position', 'phone', 'date_hired', 'status', 'email', 'role']);
+        $firstName = trim($data['first_name']);
+        $middleName = isset($data['middle_name']) ? trim($data['middle_name']) : null;
+        $middleName = $middleName !== '' ? $middleName : null;
+        $lastName = trim($data['last_name']);
+        $fullName = User::composeFullName($firstName, $middleName, $lastName);
+
+        $previous = $employee->only(['employee_id', 'first_name', 'middle_name', 'last_name', 'full_name', 'department', 'position', 'phone', 'date_hired', 'status', 'email', 'role']);
 
         $payload = [
             'employee_id' => strtoupper(trim($data['employee_id'])),
-            'full_name' => trim($data['full_name']),
+            'first_name' => $firstName,
+            'middle_name' => $middleName,
+            'last_name' => $lastName,
+            'full_name' => $fullName,
             'department' => $data['department'],
             'position' => $data['position'] ?? null,
             'phone' => $data['phone'] ?? null,
@@ -255,25 +278,20 @@ class EmployeeController extends Controller
 
     protected function suggestEmployeeId(): string
     {
-        $year = now('Asia/Manila')->format('Y');
         $prefix = 'EMP-';
+        $pattern = '/^'.preg_quote($prefix, '/').'(\d+)$/';
 
-        $latest = User::query()
+        $maxSequence = User::query()
+            ->whereNotNull('employee_id')
             ->where('employee_id', 'like', $prefix.'%')
-            ->orderByDesc('employee_id')
-            ->value('employee_id');
+            ->pluck('employee_id')
+            ->map(fn (string $id) => preg_match($pattern, $id, $matches) ? (int) $matches[1] : 0)
+            ->max() ?? 0;
 
-        $sequence = 1;
-        if (is_string($latest) && preg_match('/(\d+)$/', $latest, $matches)) {
-            $sequence = ((int) $matches[1]) + 1;
-        }
+        $sequence = $maxSequence + 1;
 
         do {
-            $candidate = sprintf('EMP-%03d', $sequence);
-            // Prefer EMP-001 style if that matches existing; also try year format
-            if ($sequence > 999) {
-                $candidate = sprintf('EMP-%s-%06d', $year, $sequence);
-            }
+            $candidate = sprintf('EMP-%04d', $sequence);
             $sequence++;
         } while (User::query()->where('employee_id', $candidate)->exists());
 

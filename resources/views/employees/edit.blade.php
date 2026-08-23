@@ -23,11 +23,7 @@
                 @error('employee_id')<p class="form-error">{{ $message }}</p>@enderror
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="full_name">Full name <span class="req">*</span></label>
-                <input type="text" name="full_name" id="full_name" class="form-control" value="{{ old('full_name', $employee->full_name) }}" required>
-                @error('full_name')<p class="form-error">{{ $message }}</p>@enderror
-            </div>
+            @include('employees.partials._name-fields', ['employee' => $employee])
 
             <div class="form-group">
                 <label class="form-label" for="department">Department <span class="req">*</span></label>

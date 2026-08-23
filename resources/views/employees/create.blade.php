@@ -17,16 +17,12 @@
             @csrf
 
             <div class="form-group">
-                <label class="form-label" for="employee_id">Employee ID <span class="req">*</span></label>
-                <input type="text" name="employee_id" id="employee_id" class="form-control" value="{{ old('employee_id', $suggestedId) }}" required>
-                @error('employee_id')<p class="form-error">{{ $message }}</p>@enderror
+                <label class="form-label" for="employee_id">Employee ID</label>
+                <input type="text" id="employee_id" class="form-control" value="{{ $suggestedId }}" readonly aria-readonly="true">
+                <p class="form-hint">Auto-generated on save (e.g. EMP-0001).</p>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="full_name">Full name <span class="req">*</span></label>
-                <input type="text" name="full_name" id="full_name" class="form-control" value="{{ old('full_name') }}" required placeholder="Juan Dela Cruz">
-                @error('full_name')<p class="form-error">{{ $message }}</p>@enderror
-            </div>
+            @include('employees.partials._name-fields')
 
             <div class="form-group">
                 <label class="form-label" for="department">Department <span class="req">*</span></label>
