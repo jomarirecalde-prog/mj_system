@@ -123,32 +123,142 @@
       .replace(/"/g, '&quot;');
   }
 
-  /* Sidebar */
+  /* Sidebar — mobile drawer + desktop collapse */
   function initSidebar() {
     const sidebar = document.getElementById('app-sidebar');
     const toggle = document.getElementById('sidebar-toggle');
+    const collapseBtn = document.getElementById('sidebar-collapse');
     const backdrop = document.getElementById('sidebar-backdrop');
     if (!sidebar || !toggle) return;
 
-    const open = () => {
-      sidebar.classList.add('is-open');
-      backdrop?.classList.add('is-visible');
-    };
-    const close = () => {
-      sidebar.classList.remove('is-open');
-      backdrop?.classList.remove('is-visible');
+    const MOBILE_MQ = window.matchMedia('(max-width: 960px)');
+    const COLLAPSE_KEY = 'app-sidebar-collapsed';
+
+    const isMobile = () => MOBILE_MQ.matches;
+
+    const setMobileOpen = (open) => {
+      sidebar.classList.toggle('is-open', open);
+      backdrop?.classList.toggle('is-visible', open);
+      document.body.classList.toggle('sidebar-mobile-open', open);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      toggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+      backdrop?.setAttribute('aria-hidden', open ? 'false' : 'true');
     };
 
-    toggle.addEventListener('click', () => {
-      sidebar.classList.contains('is-open') ? close() : open();
+    const openMobile = () => setMobileOpen(true);
+    const closeMobile = () => setMobileOpen(false);
+
+    const applyCollapse = (collapsed) => {
+      sidebar.classList.toggle('is-collapsed', collapsed);
+      document.body.classList.toggle('sidebar-is-collapsed', collapsed);
+      collapseBtn?.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      collapseBtn?.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+    };
+
+    let collapsed = false;
+    try {
+      collapsed = localStorage.getItem(COLLAPSE_KEY) === '1';
+    } catch (_) {
+      /* ignore */
+    }
+    if (!isMobile()) {
+      applyCollapse(collapsed);
+    }
+
+    collapseBtn?.addEventListener('click', () => {
+      if (isMobile()) return;
+      collapsed = !sidebar.classList.contains('is-collapsed');
+      applyCollapse(collapsed);
+      try {
+        localStorage.setItem(COLLAPSE_KEY, collapsed ? '1' : '0');
+      } catch (_) {
+        /* ignore */
+      }
     });
-    backdrop?.addEventListener('click', close);
+
+    toggle.addEventListener('click', () => {
+      sidebar.classList.contains('is-open') ? closeMobile() : openMobile();
+    });
+
+    backdrop?.addEventListener('click', closeMobile);
+
+    sidebar.querySelectorAll('.sidebar__link').forEach((link) => {
+      link.addEventListener('click', () => {
+        if (isMobile()) closeMobile();
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && sidebar.classList.contains('is-open') && isMobile()) {
+        closeMobile();
+      }
+    });
+
+    MOBILE_MQ.addEventListener('change', () => {
+      closeMobile();
+      if (isMobile()) {
+        applyCollapse(false);
+      } else {
+        try {
+          collapsed = localStorage.getItem(COLLAPSE_KEY) === '1';
+        } catch (_) {
+          collapsed = false;
+        }
+        applyCollapse(collapsed);
+      }
+    });
+  }
+
+  /* Collapsible navigation groups */
+  function initNavGroups() {
+    const STORAGE_KEY = 'app-nav-groups';
+    let saved = {};
+
+    try {
+      saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    } catch (_) {
+      saved = {};
+    }
+
+    const setExpanded = (group, expanded) => {
+      group.classList.toggle('is-expanded', expanded);
+      const trigger = group.querySelector(':scope > [data-nav-trigger]');
+      trigger?.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    };
+
+    document.querySelectorAll('[data-nav-group]').forEach((group) => {
+      const id = group.dataset.navGroup;
+      const isRouteActive = group.classList.contains('is-route-active');
+      const expanded = Object.prototype.hasOwnProperty.call(saved, id) ? saved[id] : isRouteActive;
+      setExpanded(group, expanded);
+
+      const trigger = group.querySelector(':scope > [data-nav-trigger]');
+      trigger?.addEventListener('click', () => {
+        const nowExpanded = !group.classList.contains('is-expanded');
+        setExpanded(group, nowExpanded);
+        saved[id] = nowExpanded;
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+        } catch (_) {
+          /* ignore */
+        }
+      });
+    });
   }
 
   /* Global search shortcut */
   function initGlobalSearch() {
     const input = document.getElementById('global-search');
+    const searchWrap = document.getElementById('topbar-search');
+    const searchToggle = document.getElementById('search-toggle');
     if (!input) return;
+
+    const isTypingTarget = (el) => {
+      if (!el) return false;
+      const tag = el.tagName;
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+    };
+
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         const q = input.value.trim();
@@ -156,14 +266,85 @@
           window.location.href = input.dataset.searchUrl + '?search=' + encodeURIComponent(q);
         }
       }
+      if (e.key === 'Escape') {
+        input.blur();
+        searchWrap?.classList.remove('is-focused', 'is-mobile-open');
+        searchToggle?.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    input.addEventListener('focus', () => searchWrap?.classList.add('is-focused'));
+    input.addEventListener('blur', () => searchWrap?.classList.remove('is-focused'));
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        if (isTypingTarget(document.activeElement) && document.activeElement !== input) return;
+        e.preventDefault();
+        if (window.matchMedia('(max-width: 960px)').matches) {
+          searchWrap?.classList.add('is-mobile-open');
+          searchToggle?.setAttribute('aria-expanded', 'true');
+        }
+        input.focus();
+        input.select();
+      }
+    });
+
+    searchToggle?.addEventListener('click', () => {
+      const open = !searchWrap?.classList.contains('is-mobile-open');
+      searchWrap?.classList.toggle('is-mobile-open', open);
+      searchToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open) {
+        input.focus();
+      } else {
+        input.blur();
+      }
+    });
+  }
+
+  /* Account dropdown */
+  function initAccountMenu() {
+    const menu = document.getElementById('account-menu');
+    const trigger = document.getElementById('account-menu-trigger');
+    const dropdown = document.getElementById('account-menu-dropdown');
+    if (!menu || !trigger || !dropdown) return;
+
+    const open = () => {
+      dropdown.hidden = false;
+      trigger.setAttribute('aria-expanded', 'true');
+    };
+
+    const close = () => {
+      dropdown.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
+    };
+
+    const isOpen = () => trigger.getAttribute('aria-expanded') === 'true';
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isOpen() ? close() : open();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!menu.contains(e.target)) close();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen()) {
+        close();
+        trigger.focus();
+      }
     });
   }
 
   /* Notification polling */
   function initNotificationBadge() {
     const badge = document.getElementById('notification-badge');
+    const btn = document.getElementById('notification-btn');
     const url = badge?.dataset.pollUrl;
     if (!badge || !url) return;
+
+    let prevCount = 0;
 
     const refresh = async () => {
       try {
@@ -171,6 +352,12 @@
         const count = data.count ?? 0;
         badge.textContent = count > 99 ? '99+' : String(count);
         badge.classList.toggle('is-visible', count > 0);
+
+        if (count > prevCount && prevCount >= 0) {
+          btn?.classList.add('has-pulse');
+          setTimeout(() => btn?.classList.remove('has-pulse'), 1400);
+        }
+        prevCount = count;
       } catch (_) {
         /* silent */
       }
@@ -208,7 +395,9 @@
   /* Flash to toast */
   document.addEventListener('DOMContentLoaded', () => {
     initSidebar();
+    initNavGroups();
     initGlobalSearch();
+    initAccountMenu();
     initNotificationBadge();
     initConfirmForms();
 

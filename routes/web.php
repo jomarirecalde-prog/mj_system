@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\QrStationController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AttendanceCorrectionController;
 use App\Http\Controllers\AttendanceLogController;
@@ -37,6 +38,8 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\QrController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\Station\StationAuthController;
+use App\Http\Controllers\Station\StationScannerController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TransferController;
@@ -44,6 +47,18 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('i/{qr_code}', [QrController::class, 'publicProfile'])->name('qr.public');
+
+Route::prefix('station')->name('station.')->group(function (): void {
+    Route::get('login', [StationAuthController::class, 'showLogin'])->name('login');
+    Route::post('login', [StationAuthController::class, 'login'])->name('login.submit');
+
+    Route::middleware('station.device')->group(function (): void {
+        Route::post('logout', [StationAuthController::class, 'logout'])->name('logout');
+        Route::get('scanner', [StationScannerController::class, 'index'])->name('scanner');
+        Route::post('scan', [StationScannerController::class, 'scan'])->name('scan');
+        Route::get('heartbeat', [StationScannerController::class, 'heartbeat'])->name('heartbeat');
+    });
+});
 
 Route::middleware('guest')->group(function (): void {
     Route::get('login', [LoginController::class, 'showLogin'])->name('login');
@@ -264,6 +279,20 @@ Route::middleware(['auth', 'active'])->group(function (): void {
             Route::post('backups', [BackupController::class, 'create'])->name('backups.create');
             Route::get('backups/{backup}/download', [BackupController::class, 'download'])->name('backups.download');
             Route::post('backups/{backup}/restore', [BackupController::class, 'restore'])->name('backups.restore');
+
+            Route::prefix('admin/qr-stations')->name('admin.qr-stations.')->group(function (): void {
+                Route::get('generate-password', [QrStationController::class, 'generatePassword'])->name('generate-password');
+                Route::get('/', [QrStationController::class, 'index'])->name('index');
+                Route::post('/', [QrStationController::class, 'store'])->name('store');
+                Route::get('{qr_station}', [QrStationController::class, 'show'])->name('show');
+                Route::put('{qr_station}', [QrStationController::class, 'update'])->name('update');
+                Route::delete('{qr_station}', [QrStationController::class, 'destroy'])->name('destroy');
+                Route::patch('{qr_station}/activate', [QrStationController::class, 'activate'])->name('activate');
+                Route::patch('{qr_station}/deactivate', [QrStationController::class, 'deactivate'])->name('deactivate');
+                Route::patch('{qr_station}/reset-device', [QrStationController::class, 'resetDevice'])->name('reset-device');
+                Route::patch('{qr_station}/revoke-device', [QrStationController::class, 'revokeDevice'])->name('revoke-device');
+                Route::patch('{qr_station}/regenerate-password', [QrStationController::class, 'regeneratePassword'])->name('regenerate-password');
+            });
         });
     });
 });

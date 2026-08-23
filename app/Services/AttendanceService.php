@@ -10,6 +10,8 @@ use App\Models\EmployeeQrCode;
 use App\Models\EmployeeSchedule;
 use App\Models\Holiday;
 use App\Models\LeaveRecord;
+use App\Models\QrStation;
+use App\Models\QrStationDevice;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -29,15 +31,52 @@ class AttendanceService
      */
     public function processScan(string $qrPayload, User $scanner, Request $request): array
     {
+        return $this->processScanInternal($qrPayload, $scanner, $request, null, null);
+    }
+
+    /**
+     * Process a QR scan from an authorized station device.
+     *
+     * @return array{success: bool, code: string, message: string, title: string, action?: string, employee?: array<string, mixed>, record?: array<string, mixed>, time?: string, station?: string}
+     */
+    public function processStationScan(string $qrPayload, QrStation $station, QrStationDevice $device, Request $request): array
+    {
+        if (! $station->isActive()) {
+            return $this->scanResponse(false, 'inactive_station', 'STATION INACTIVE', 'This station is not authorized to record attendance.');
+        }
+
+        if (! $device->isAuthorized() || (int) $station->authorized_device_id !== (int) $device->id) {
+            return $this->scanResponse(false, 'unauthorized', 'UNAUTHORIZED', 'This station device is not authorized.');
+        }
+
+        $result = $this->processScanInternal($qrPayload, null, $request, $station, $device);
+        $result['station'] = $station->station_name;
+
+        return $result;
+    }
+
+    /**
+     * @return array{success: bool, code: string, message: string, title: string, action?: string, employee?: array<string, mixed>, record?: array<string, mixed>, time?: string}
+     */
+    protected function processScanInternal(
+        string $qrPayload,
+        ?User $scanner,
+        Request $request,
+        ?QrStation $station = null,
+        ?QrStationDevice $device = null,
+    ): array {
         $now = now('Asia/Manila');
         $payload = trim($qrPayload);
-        $device = $this->deviceLabel($request);
-        $location = $request->input('location');
+        $deviceLabel = $station
+            ? 'Station: '.$station->station_code.' ('.$station->station_name.')'
+            : $this->deviceLabel($request);
+        $location = $station?->location ?? $request->input('location');
+        $fromStation = $station !== null;
 
         if ($payload === '') {
-            $this->logScan(null, $payload, 'rejected', 'invalid', 'Invalid QR payload.', $scanner, $request, $now);
+            $this->logScan(null, $payload, 'rejected', 'invalid', 'Invalid QR payload.', $scanner, $request, $now, $deviceLabel);
 
-            return $this->scanResponse(false, 'invalid', 'INVALID QR CODE', 'Employee record not found.');
+            return $this->scanResponse(false, 'invalid', $fromStation ? 'QR CODE NOT RECOGNIZED' : 'INVALID QR CODE', $fromStation ? 'Please use a valid employee QR code.' : 'Employee record not found.');
         }
 
         $qr = EmployeeQrCode::query()
@@ -46,23 +85,23 @@ class AttendanceService
             ->first();
 
         if ($qr === null) {
-            $this->logScan(null, $payload, 'rejected', 'invalid', 'Employee record not found.', $scanner, $request, $now);
+            $this->logScan(null, $payload, 'rejected', 'invalid', 'Employee record not found.', $scanner, $request, $now, $deviceLabel);
 
-            return $this->scanResponse(false, 'invalid', 'INVALID QR CODE', 'Employee record not found.');
+            return $this->scanResponse(false, 'invalid', $fromStation ? 'QR CODE NOT RECOGNIZED' : 'INVALID QR CODE', $fromStation ? 'Please use a valid employee QR code.' : 'Employee record not found.');
         }
 
         $employee = $qr->user;
 
         if ($employee === null || ! $qr->isActive()) {
-            $this->logScan($employee?->id, $payload, 'rejected', 'inactive', 'QR code is disabled.', $scanner, $request, $now);
+            $this->logScan($employee?->id, $payload, 'rejected', 'inactive', 'QR code is disabled.', $scanner, $request, $now, $deviceLabel);
 
-            return $this->scanResponse(false, 'inactive', 'ACCOUNT INACTIVE', 'This employee QR code is not active.');
+            return $this->scanResponse(false, 'inactive', $fromStation ? 'ATTENDANCE NOT ALLOWED' : 'ACCOUNT INACTIVE', $fromStation ? 'This employee account is currently inactive.' : 'This employee QR code is not active.');
         }
 
         if (! $employee->isActive()) {
-            $this->logScan($employee->id, $payload, 'rejected', 'inactive', 'Employee account inactive.', $scanner, $request, $now);
+            $this->logScan($employee->id, $payload, 'rejected', 'inactive', 'Employee account inactive.', $scanner, $request, $now, $deviceLabel);
 
-            return $this->scanResponse(false, 'inactive', 'ACCOUNT INACTIVE', 'This employee is not currently active.', $employee);
+            return $this->scanResponse(false, 'inactive', $fromStation ? 'ATTENDANCE NOT ALLOWED' : 'ACCOUNT INACTIVE', $fromStation ? 'This employee account is currently inactive.' : 'This employee is not currently active.', $employee);
         }
 
         $cooldown = AttendanceSetting::int('scan_cooldown_seconds', 30);
@@ -79,7 +118,7 @@ class AttendanceService
                 ->first();
 
             if ($todayRecord?->time_in && ! $todayRecord->time_out) {
-                $this->logScan($employee->id, $payload, 'time_in', 'already_in', 'Already timed in (cooldown).', $scanner, $request, $now);
+                $this->logScan($employee->id, $payload, 'time_in', 'already_in', 'Already timed in (cooldown).', $scanner, $request, $now, $deviceLabel);
 
                 return $this->scanResponse(
                     false,
@@ -91,7 +130,7 @@ class AttendanceService
                 );
             }
 
-            $this->logScan($employee->id, $payload, $lastScan->action, 'cooldown', 'Scan cooldown active.', $scanner, $request, $now);
+            $this->logScan($employee->id, $payload, $lastScan->action, 'cooldown', 'Scan cooldown active.', $scanner, $request, $now, $deviceLabel);
 
             return $this->scanResponse(
                 false,
@@ -102,7 +141,7 @@ class AttendanceService
             );
         }
 
-        return DB::transaction(function () use ($employee, $payload, $scanner, $request, $now, $device, $location) {
+        return DB::transaction(function () use ($employee, $payload, $scanner, $request, $now, $deviceLabel, $location, $fromStation, $station) {
             $date = $now->toDateString();
             $record = AttendanceRecord::query()
                 ->where('user_id', $employee->id)
@@ -138,8 +177,8 @@ class AttendanceService
                     'late_minutes' => $lateMinutes,
                     'status' => $status,
                     'source' => 'qr',
-                    'time_in_by' => $scanner->id,
-                    'time_in_device' => $device,
+                    'time_in_by' => $scanner?->id,
+                    'time_in_device' => $deviceLabel,
                     'time_in_location' => $location,
                 ])->save();
 
@@ -148,7 +187,7 @@ class AttendanceService
                     'status' => $status,
                 ], $scanner, $request, null);
 
-                $this->logScan($employee->id, $payload, 'time_in', $status === 'late' ? 'late' : 'success', 'Time In recorded.', $scanner, $request, $now);
+                $this->logScan($employee->id, $payload, 'time_in', $status === 'late' ? 'late' : 'success', 'Time In recorded.', $scanner, $request, $now, $deviceLabel);
 
                 $this->notifyPunch($employee, 'time_in', $status, $now);
 
@@ -157,19 +196,19 @@ class AttendanceService
                 return $this->scanResponse(
                     true,
                     $status === 'late' ? 'late' : 'time_in',
-                    'TIME IN SUCCESSFUL',
-                    $status === 'late'
-                        ? 'Time In Successfully Recorded (Late)'
-                        : 'Time In Successfully Recorded',
+                    $fromStation ? 'TIME IN RECORDED' : 'TIME IN SUCCESSFUL',
+                    $fromStation
+                        ? ($status === 'late' ? 'Time In recorded (Late)' : 'Time In recorded successfully.')
+                        : ($status === 'late' ? 'Time In Successfully Recorded (Late)' : 'Time In Successfully Recorded'),
                     $employee,
                     $record,
                     'time_in',
-                    $now->format('h:i:s A')
+                    $now->format('h:i A')
                 );
             }
 
             if ($record->time_out !== null) {
-                $this->logScan($employee->id, $payload, 'time_out', 'already_out', 'Time Out already recorded.', $scanner, $request, $now);
+                $this->logScan($employee->id, $payload, 'time_out', 'already_out', 'Time Out already recorded.', $scanner, $request, $now, $deviceLabel);
 
                 return $this->scanResponse(
                     false,
@@ -184,8 +223,8 @@ class AttendanceService
             // Already timed in — this scan is Time Out
             $record->fill([
                 'time_out' => $now,
-                'time_out_by' => $scanner->id,
-                'time_out_device' => $device,
+                'time_out_by' => $scanner?->id,
+                'time_out_device' => $deviceLabel,
                 'time_out_location' => $location,
                 'source' => 'qr',
             ])->save();
@@ -198,19 +237,19 @@ class AttendanceService
                 'status' => $record->status,
             ], $scanner, $request, null);
 
-            $this->logScan($employee->id, $payload, 'time_out', 'success', 'Time Out recorded.', $scanner, $request, $now);
+            $this->logScan($employee->id, $payload, 'time_out', 'success', 'Time Out recorded.', $scanner, $request, $now, $deviceLabel);
             $this->notifyPunch($employee, 'time_out', $record->status, $now);
             $this->audit->log('qr_time_out', 'attendance', AttendanceRecord::class, $record->id, null, $record->toArray());
 
             return $this->scanResponse(
                 true,
                 'time_out',
-                'TIME OUT SUCCESSFUL',
-                'Time Out Successfully Recorded',
+                $fromStation ? 'TIME OUT RECORDED' : 'TIME OUT SUCCESSFUL',
+                $fromStation ? 'Time Out recorded successfully.' : 'Time Out Successfully Recorded',
                 $employee,
                 $record,
                 'time_out',
-                $now->format('h:i:s A')
+                $now->format('h:i A')
             );
         });
     }
@@ -703,9 +742,10 @@ class AttendanceService
         ?string $action,
         string $result,
         string $remarks,
-        User $scanner,
+        ?User $scanner,
         Request $request,
         Carbon $now,
+        ?string $deviceOverride = null,
     ): void {
         AttendanceQrScanLog::query()->create([
             'user_id' => $userId,
@@ -713,8 +753,8 @@ class AttendanceService
             'action' => $action,
             'scan_date' => $now->toDateString(),
             'scan_time' => $now->format('H:i:s'),
-            'scanned_by' => $scanner->id,
-            'device' => $this->deviceLabel($request),
+            'scanned_by' => $scanner?->id,
+            'device' => $deviceOverride ?? $this->deviceLabel($request),
             'result' => $result,
             'remarks' => $remarks,
             'ip_address' => $request->ip(),

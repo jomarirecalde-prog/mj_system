@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\EnsureRole::class,
             'employee' => \App\Http\Middleware\EnsureEmployeeRole::class,
             'not_employee' => \App\Http\Middleware\RedirectIfEmployee::class,
+            'station.device' => \App\Http\Middleware\EnsureAuthorizedStationDevice::class,
         ]);
 
         $middleware->appendToGroup('web', [

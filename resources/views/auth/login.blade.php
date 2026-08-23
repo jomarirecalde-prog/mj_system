@@ -2,7 +2,7 @@
 
 @section('title', 'Home')
 @section('meta_description', 'QR Inventory System — manage products, stock, QR codes, and inventory transactions in one place.')
-@section('body_class', $errors->any() ? 'has-login-errors' : '')
+@section('body_class', ($errors->has('email') || $errors->has('password')) ? 'has-login-errors' : (($errors->has('station_code') || $errors->has('station_password')) ? 'has-station-errors' : ''))
 
 @section('content')
 @php
@@ -41,6 +41,7 @@
                     <li><a href="#features">Features</a></li>
                     <li><a href="#how-it-works">How It Works</a></li>
                     <li><a href="#employee-portal">For Employees</a></li>
+                    <li><a href="#qr-station">QR Station</a></li>
                 </ul>
             </nav>
 
@@ -48,6 +49,7 @@
                 @if (Route::has('employee.login'))
                     <a class="lp-nav__employee" href="{{ route('employee.login') }}">Employee Portal</a>
                 @endif
+                <a class="lp-nav__employee" href="#qr-station">QR Station</a>
                 <a class="lp-btn lp-btn--primary lp-btn--sm" href="#login" data-focus-login>Sign In</a>
             </div>
 
@@ -58,10 +60,12 @@
                     <li><a href="#features">Features</a></li>
                     <li><a href="#how-it-works">How It Works</a></li>
                     <li><a href="#employee-portal">For Employees</a></li>
+                    <li><a href="#qr-station">QR Station</a></li>
                 </ul>
                 @if (Route::has('employee.login'))
                     <a class="lp-nav__employee" href="{{ route('employee.login') }}">Employee Portal</a>
                 @endif
+                <a class="lp-nav__employee" href="#qr-station">QR Station</a>
                 <a class="lp-btn lp-btn--primary" href="#login" data-focus-login>Sign In</a>
             </div>
         </div>
@@ -69,6 +73,17 @@
 </header>
 
 <main id="main-content">
+    @if (session('success') && ! $errors->any())
+        <div class="lp-container" style="padding-top: 1rem;">
+            <div class="lp-alert lp-alert--success" role="status">{{ session('success') }}</div>
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="lp-container" style="padding-top: 1rem;">
+            <div class="lp-alert" role="alert">{{ session('error') }}</div>
+        </div>
+    @endif
+
     {{-- Hero --}}
     <section class="lp-hero" id="home" aria-labelledby="hero-title">
         <div class="lp-container lp-hero__grid">
@@ -80,6 +95,7 @@
                 </p>
                 <div class="lp-hero__actions">
                     <a class="lp-btn lp-btn--primary" href="#login" data-focus-login>Sign In</a>
+                    <a class="lp-btn lp-btn--secondary" href="#qr-station">QR Attendance Station</a>
                     <a class="lp-btn lp-btn--secondary" href="#features">Explore Features</a>
                 </div>
             </div>
@@ -329,6 +345,47 @@
         </div>
     </section>
 
+    {{-- QR Attendance Station --}}
+    <section class="lp-section lp-login lp-station" id="qr-station" aria-labelledby="qr-station-title">
+        <div class="lp-container lp-login__grid">
+            <div class="lp-login__copy lp-reveal">
+                <p class="lp-section__eyebrow">Attendance Kiosk</p>
+                <h2 class="lp-section__title" id="qr-station-title">QR Attendance Station</h2>
+                <p class="lp-section__lead">
+                    Sign in on a dedicated scanning device to record employee Time In and Time Out using QR codes.
+                </p>
+                <ul class="lp-login__checks">
+                    <li><i class="fa-solid fa-check" aria-hidden="true"></i> One device per station</li>
+                    <li><i class="fa-solid fa-check" aria-hidden="true"></i> Full-screen QR scanner</li>
+                    <li><i class="fa-solid fa-check" aria-hidden="true"></i> Secure station credentials</li>
+                </ul>
+            </div>
+
+            <div class="lp-login__panel lp-station__panel lp-reveal">
+                <h3 class="lp-login__panel-title">Sign in this device</h3>
+                <p class="lp-login__panel-sub">Use your assigned Station ID and password to start scanning employee QR codes.</p>
+
+                @if ($errors->has('station_code') || $errors->has('station_password'))
+                    <div class="lp-alert" role="alert">
+                        <div>
+                            <strong>Unable to sign in to station</strong>
+                            <ul>
+                                @foreach ($errors->get('station_code') as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                                @foreach ($errors->get('station_password') as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                @endif
+
+                @include('auth.partials.station-login-form')
+            </div>
+        </div>
+    </section>
+
     {{-- About --}}
     <section class="lp-section lp-section--alt" id="about" aria-labelledby="about-title">
         <div class="lp-container lp-about">
@@ -502,6 +559,7 @@
                 @if (Route::has('employee.login'))
                     <li><a href="{{ route('employee.login') }}">Employee Portal</a></li>
                 @endif
+                <li><a href="#qr-station">QR Station</a></li>
             </ul>
         </div>
         <p class="lp-footer__copy">© {{ date('Y') }} {{ $orgName }}. All rights reserved.</p>

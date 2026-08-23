@@ -59,6 +59,15 @@
     }
   }
 
+  function focusStationCode() {
+    var stationCode = document.getElementById('station_code');
+    if (stationCode) {
+      window.setTimeout(function () {
+        stationCode.focus({ preventScroll: true });
+      }, reduceMotion ? 0 : 350);
+    }
+  }
+
   function scrollToHash(hash, focusEmail) {
     if (!hash || hash === '#') return;
     var target = document.querySelector(hash);
@@ -69,6 +78,8 @@
 
     if (focusEmail || hash === '#login') {
       focusLoginEmail();
+    } else if (hash === '#qr-station') {
+      focusStationCode();
     }
 
     if (history.replaceState) {
@@ -130,11 +141,54 @@
     });
   }
 
-  // Validation errors / hash → stay on login
+  // Station password visibility
+  var stationToggleBtn = document.getElementById('toggle-station-password');
+  var stationPasswordInput = document.getElementById('station_password');
+
+  if (stationToggleBtn && stationPasswordInput) {
+    stationToggleBtn.addEventListener('click', function () {
+      var revealing = stationPasswordInput.getAttribute('type') === 'password';
+      stationPasswordInput.setAttribute('type', revealing ? 'text' : 'password');
+      stationToggleBtn.setAttribute('aria-pressed', revealing ? 'true' : 'false');
+      stationToggleBtn.setAttribute('aria-label', revealing ? 'Hide password' : 'Show password');
+
+      var showIcon = stationToggleBtn.querySelector('.lp-toggle__show');
+      var hideIcon = stationToggleBtn.querySelector('.lp-toggle__hide');
+      if (showIcon && hideIcon) {
+        showIcon.hidden = revealing;
+        hideIcon.hidden = !revealing;
+      }
+    });
+  }
+
+  // Station login submit loading
+  var stationForm = document.getElementById('station-login-form');
+  var stationSubmitBtn = document.getElementById('station-login-submit');
+
+  if (stationForm && stationSubmitBtn) {
+    stationForm.addEventListener('submit', function (event) {
+      if (stationSubmitBtn.classList.contains('is-loading')) {
+        event.preventDefault();
+        return;
+      }
+
+      stationSubmitBtn.disabled = true;
+      stationSubmitBtn.classList.add('is-loading');
+      stationSubmitBtn.setAttribute('aria-busy', 'true');
+
+      var loading = stationSubmitBtn.querySelector('.lp-submit-loading');
+      if (loading) loading.removeAttribute('aria-hidden');
+    });
+  }
+
+  // Validation errors / hash → stay on login or station section
   var hasErrors = document.body.classList.contains('has-login-errors');
+  var hasStationErrors = document.body.classList.contains('has-station-errors');
   var hash = window.location.hash;
 
-  if (hasErrors || hash === '#login') {
+  if (hasStationErrors || hash === '#qr-station') {
+    scrollToHash('#qr-station', false);
+  } else if (hasErrors || hash === '#login') {
     scrollToHash('#login', true);
   } else if (hash && document.querySelector(hash)) {
     scrollToHash(hash, false);
