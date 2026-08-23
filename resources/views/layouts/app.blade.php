@@ -1,3 +1,13 @@
+@if(is_app_navigation())
+<meta name="page-title" content="@yield('title', 'Dashboard') — {{ setting('organization_name', 'QR Inventory') }}">
+@stack('styles')
+<main class="page-content" id="page-content">
+    @include('partials.flash')
+    @include('partials.alerts')
+    @yield('content')
+</main>
+@stack('scripts')
+@else
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +22,7 @@
     @stack('styles')
 </head>
 <body class="app-body">
+<div id="nav-progress" class="nav-progress" aria-hidden="true"><div class="nav-progress__bar"></div></div>
 @php
     $user = auth()->user();
     $isAdmin = $user->isAdmin();
@@ -146,10 +157,10 @@
                             <svg class="nav-group__chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div class="nav-subgroup__panel" data-nav-panel>
-                            <a href="{{ route('attendance.dashboard') }}" class="sidebar__link sidebar__link--nested {{ request()->routeIs('attendance.dashboard') || request()->routeIs('attendance.live') ? 'is-active' : '' }}" data-tooltip="Attendance Dashboard">
+                            <a href="{{ route('attendance.dashboard') }}" class="sidebar__link sidebar__link--nested {{ request()->routeIs('attendance.dashboard') || request()->routeIs('attendance.live') ? 'is-active' : '' }}" data-nav-paths="/attendance,/attendance/live" data-tooltip="Attendance Dashboard">
                                 <span class="sidebar__label">Attendance Dashboard</span>
                             </a>
-                            <a href="{{ route('attendance.today') }}" class="sidebar__link sidebar__link--nested {{ request()->routeIs('attendance.today') || request()->routeIs('attendance.currently-in') ? 'is-active' : '' }}" data-tooltip="Today's Attendance">
+                            <a href="{{ route('attendance.today') }}" class="sidebar__link sidebar__link--nested {{ request()->routeIs('attendance.today') || request()->routeIs('attendance.currently-in') ? 'is-active' : '' }}" data-nav-paths="/attendance/today,/attendance/currently-in" data-tooltip="Today's Attendance">
                                 <span class="sidebar__label">Today's Attendance</span>
                             </a>
                             <a href="{{ route('attendance.records') }}" class="sidebar__link sidebar__link--nested {{ request()->routeIs('attendance.records*') ? 'is-active' : '' }}" data-tooltip="DTR Records">
@@ -193,11 +204,11 @@
                             <a href="{{ route('employees.index') }}" class="sidebar__link sidebar__link--nested {{ request()->routeIs('employees.*') ? 'is-active' : '' }}" data-tooltip="Employees">
                                 <span class="sidebar__label">Employees</span>
                             </a>
-                            <a href="{{ route('attendance.schedules.index') }}" class="sidebar__link sidebar__link--nested {{ request()->routeIs('attendance.schedules.*') || request()->routeIs('attendance.shifts.*') ? 'is-active' : '' }}" data-tooltip="Employee Schedules">
+                            <a href="{{ route('attendance.schedules.index') }}" class="sidebar__link sidebar__link--nested {{ request()->routeIs('attendance.schedules.*') || request()->routeIs('attendance.shifts.*') ? 'is-active' : '' }}" data-nav-paths="/attendance/schedules*,/attendance/shifts*" data-tooltip="Employee Schedules">
                                 <span class="sidebar__label">Employee Schedules</span>
                             </a>
                             @if($isAdmin)
-                                <a href="{{ route('attendance.corrections.index') }}" class="sidebar__link sidebar__link--nested {{ request()->routeIs('attendance.corrections.*') || request()->routeIs('attendance.correction-requests.*') ? 'is-active' : '' }}" data-tooltip="DTR Corrections">
+                                <a href="{{ route('attendance.corrections.index') }}" class="sidebar__link sidebar__link--nested {{ request()->routeIs('attendance.corrections.*') || request()->routeIs('attendance.correction-requests.*') ? 'is-active' : '' }}" data-nav-paths="/attendance/corrections*,/attendance/correction-requests*" data-tooltip="DTR Corrections">
                                     <span class="sidebar__label">DTR Corrections</span>
                                 </a>
                             @endif
@@ -375,7 +386,7 @@
         </div>
     </header>
 
-    <main class="page-content">
+    <main class="page-content" id="page-content">
         @include('partials.flash')
         @include('partials.alerts')
         @yield('content')
@@ -387,6 +398,8 @@
 @include('partials.logout-confirmation-modal')
 
 <script src="{{ asset('js/app.js') }}"></script>
+<script src="{{ asset('js/navigation.js') }}"></script>
 @stack('scripts')
 </body>
 </html>
+@endif

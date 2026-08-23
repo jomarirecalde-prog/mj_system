@@ -7,7 +7,7 @@
     <div><h1>DTR Corrections</h1><p class="page-header__meta">Manual adjustments with full audit history</p></div>
     <div class="btn-group">
         <a href="{{ route('attendance.correction-requests.index') }}" class="btn btn--secondary">
-            Employee requests@if(($pendingCount ?? 0) > 0) ({{ $pendingCount }})@endif
+            Employee requests @if(($pendingCount ?? 0) > 0) ({{ $pendingCount }}) @endif
         </a>
         <a href="{{ route('attendance.corrections.create') }}" class="btn btn--primary">New correction</a>
     </div>

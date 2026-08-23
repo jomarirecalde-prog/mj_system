@@ -4,6 +4,13 @@ use App\Models\SystemSetting;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 
+if (! function_exists('is_app_navigation')) {
+    function is_app_navigation(): bool
+    {
+        return request()->header('X-App-Navigation') === 'true';
+    }
+}
+
 if (! function_exists('setting')) {
     function setting(string $key, mixed $default = null): mixed
     {

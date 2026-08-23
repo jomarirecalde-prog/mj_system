@@ -58,17 +58,12 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="shift_id">Work schedule / shift</label>
-                <select name="shift_id" id="shift_id" class="form-select">
-                    <option value="">Keep current schedule</option>
-                    @foreach($shifts as $shift)
-                        <option value="{{ $shift->id }}" @selected(old('shift_id', optional($employee->activeSchedule)->shift_id)==$shift->id)>
-                            {{ $shift->name }} ({{ substr($shift->time_in,0,5) }} – {{ substr($shift->time_out,0,5) }})
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+            @include('employees.partials._schedule-fields', [
+                'shifts' => $shifts,
+                'defaultTimes' => $defaultTimes,
+                'schedule' => $employee->activeSchedule,
+                'isEdit' => true,
+            ])
 
             <div class="form-group">
                 <label class="form-label" for="email">Email <span class="req">*</span></label>

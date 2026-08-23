@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AttendanceShift;
+use App\Models\AttendanceSetting;
 use App\Models\Department;
 use App\Models\EmployeeSchedule;
 use App\Models\User;
@@ -67,8 +68,9 @@ class EmployeeController extends Controller
         $departments = Department::query()->where('is_active', true)->orderBy('name')->pluck('name');
         $shifts = AttendanceShift::query()->where('is_active', true)->orderBy('name')->get();
         $suggestedId = $this->suggestEmployeeId();
+        $defaultTimes = $this->defaultScheduleTimes();
 
-        return view('employees.create', compact('departments', 'shifts', 'suggestedId'));
+        return view('employees.create', compact('departments', 'shifts', 'suggestedId', 'defaultTimes'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -88,9 +90,16 @@ class EmployeeController extends Controller
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'allow_login' => ['nullable', 'boolean'],
             'role' => ['nullable', Rule::in(['admin', 'staff', 'viewer', 'employee'])],
+            'schedule_mode' => ['nullable', 'string'],
             'shift_id' => ['nullable', 'exists:attendance_shifts,id'],
+            'time_in' => ['nullable', 'date_format:H:i'],
+            'time_out' => ['nullable', 'date_format:H:i'],
+            'break_start' => ['nullable', 'date_format:H:i'],
+            'break_end' => ['nullable', 'date_format:H:i'],
             'generate_qr' => ['nullable', 'boolean'],
         ]);
+
+        $this->validateScheduleFields($request, $data);
 
         $allowLogin = $request->boolean('allow_login');
         $firstName = trim($data['first_name']);
@@ -134,9 +143,7 @@ class EmployeeController extends Controller
                 $this->attendance->generateQrCode($employee, $request->user());
             }
 
-            if (! empty($data['shift_id'])) {
-                $this->assignShift($employee, (int) $data['shift_id']);
-            }
+            $this->applyScheduleFromRequest($employee, $request, $data);
 
             return $employee;
         });
@@ -172,8 +179,9 @@ class EmployeeController extends Controller
         $departments = Department::query()->where('is_active', true)->orderBy('name')->pluck('name');
         $shifts = AttendanceShift::query()->where('is_active', true)->orderBy('name')->get();
         $employee->load('activeSchedule');
+        $defaultTimes = $this->defaultScheduleTimes();
 
-        return view('employees.edit', compact('employee', 'departments', 'shifts'));
+        return view('employees.edit', compact('employee', 'departments', 'shifts', 'defaultTimes'));
     }
 
     public function update(Request $request, User $employee): RedirectResponse
@@ -193,9 +201,16 @@ class EmployeeController extends Controller
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($employee->id)],
             'role' => ['required', Rule::in(['admin', 'staff', 'viewer', 'employee'])],
+            'schedule_mode' => ['nullable', 'string'],
             'shift_id' => ['nullable', 'exists:attendance_shifts,id'],
+            'time_in' => ['nullable', 'date_format:H:i'],
+            'time_out' => ['nullable', 'date_format:H:i'],
+            'break_start' => ['nullable', 'date_format:H:i'],
+            'break_end' => ['nullable', 'date_format:H:i'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
+
+        $this->validateScheduleFields($request, $data);
 
         $firstName = trim($data['first_name']);
         $middleName = isset($data['middle_name']) ? trim($data['middle_name']) : null;
@@ -226,18 +241,16 @@ class EmployeeController extends Controller
 
         $employee->update($payload);
 
-        if ($request->filled('shift_id')) {
-            $this->assignShift($employee, (int) $data['shift_id']);
+        $scheduleChanged = $this->applyScheduleFromRequest($employee, $request, $data);
 
-            if ($employee->isEmployee()) {
-                app(\App\Services\NotificationService::class)->notify(
-                    $employee->id,
-                    'schedule_assigned',
-                    'New schedule assigned',
-                    'A new work schedule has been assigned to your account.',
-                    route('employee.schedule')
-                );
-            }
+        if ($scheduleChanged && $employee->isEmployee()) {
+            app(\App\Services\NotificationService::class)->notify(
+                $employee->id,
+                'schedule_assigned',
+                'New schedule assigned',
+                'A new work schedule has been assigned to your account.',
+                route('employee.schedule')
+            );
         }
 
         $this->audit->log('update_employee', 'employees', User::class, $employee->id, $previous, $employee->fresh()->only(array_keys($previous)));
@@ -329,26 +342,132 @@ class EmployeeController extends Controller
         return $email;
     }
 
-    protected function assignShift(User $employee, int $shiftId): void
+    /**
+     * @return array{time_in: string, time_out: string, break_start: string, break_end: string}
+     */
+    protected function defaultScheduleTimes(): array
     {
-        $shift = AttendanceShift::query()->findOrFail($shiftId);
+        return [
+            'time_in' => substr((string) AttendanceSetting::get('default_time_in', '08:00:00'), 0, 5),
+            'time_out' => substr((string) AttendanceSetting::get('default_time_out', '17:00:00'), 0, 5),
+            'break_start' => substr((string) AttendanceSetting::get('default_break_start', '12:00:00'), 0, 5),
+            'break_end' => substr((string) AttendanceSetting::get('default_break_end', '13:00:00'), 0, 5),
+        ];
+    }
 
-        EmployeeSchedule::query()
-            ->where('user_id', $employee->id)
-            ->where('is_active', true)
-            ->update(['is_active' => false]);
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    protected function validateScheduleFields(Request $request, array &$data): void
+    {
+        $mode = $request->input('schedule_mode', 'default');
+
+        if (! in_array($mode, ['custom'], true) && ! str_starts_with($mode, 'shift-')) {
+            return;
+        }
+
+        $request->validate([
+            'time_in' => ['required', 'date_format:H:i'],
+            'time_out' => ['required', 'date_format:H:i'],
+            'break_start' => ['nullable', 'date_format:H:i'],
+            'break_end' => ['nullable', 'date_format:H:i'],
+        ]);
+
+        $data['time_in'] = $request->input('time_in');
+        $data['time_out'] = $request->input('time_out');
+        $data['break_start'] = $request->input('break_start');
+        $data['break_end'] = $request->input('break_end');
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    protected function applyScheduleFromRequest(User $employee, Request $request, array $data): bool
+    {
+        $mode = $request->input('schedule_mode', 'default');
+
+        if ($mode === 'keep') {
+            return false;
+        }
+
+        if ($mode === 'default') {
+            $hadActive = EmployeeSchedule::query()
+                ->where('user_id', $employee->id)
+                ->where('is_active', true)
+                ->exists();
+
+            if ($hadActive) {
+                $this->deactivateSchedule($employee);
+            }
+
+            return $hadActive;
+        }
+
+        if ($mode === 'custom') {
+            $this->assignSchedule($employee, [
+                'shift_id' => null,
+                'schedule_type' => 'regular',
+                'time_in' => $data['time_in'],
+                'time_out' => $data['time_out'],
+                'break_start' => $data['break_start'] ?? null,
+                'break_end' => $data['break_end'] ?? null,
+            ]);
+
+            return true;
+        }
+
+        if (str_starts_with($mode, 'shift-')) {
+            $shiftId = (int) substr($mode, 6);
+            $this->assignSchedule($employee, [
+                'shift_id' => $shiftId,
+                'schedule_type' => 'shift',
+                'time_in' => $data['time_in'],
+                'time_out' => $data['time_out'],
+                'break_start' => $data['break_start'] ?? null,
+                'break_end' => $data['break_end'] ?? null,
+            ]);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param  array{shift_id: ?int, schedule_type: string, time_in: string, time_out: string, break_start: ?string, break_end: ?string}  $data
+     */
+    protected function assignSchedule(User $employee, array $data): void
+    {
+        $this->deactivateSchedule($employee);
 
         EmployeeSchedule::query()->create([
             'user_id' => $employee->id,
-            'shift_id' => $shift->id,
-            'schedule_type' => 'shift',
-            'time_in' => $shift->time_in,
-            'time_out' => $shift->time_out,
-            'break_start' => $shift->break_start,
-            'break_end' => $shift->break_end,
+            'shift_id' => $data['shift_id'],
+            'schedule_type' => $data['schedule_type'],
+            'time_in' => $this->normalizeTimeInput($data['time_in']),
+            'time_out' => $this->normalizeTimeInput($data['time_out']),
+            'break_start' => $this->normalizeTimeInput($data['break_start'] ?? null),
+            'break_end' => $this->normalizeTimeInput($data['break_end'] ?? null),
             'work_days' => [1, 2, 3, 4, 5],
             'rest_days' => [0, 6],
             'is_active' => true,
         ]);
+    }
+
+    protected function deactivateSchedule(User $employee): void
+    {
+        EmployeeSchedule::query()
+            ->where('user_id', $employee->id)
+            ->where('is_active', true)
+            ->update(['is_active' => false]);
+    }
+
+    protected function normalizeTimeInput(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return preg_match('/^\d{2}:\d{2}$/', $value) ? $value.':00' : $value;
     }
 }

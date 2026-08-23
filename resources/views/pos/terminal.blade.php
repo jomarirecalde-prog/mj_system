@@ -664,6 +664,10 @@
         }
     });
 
+    if (window.App?.registerPageCleanup) {
+        App.registerPageCleanup(stopScanner);
+    }
+
     updateTotals();
     runSearch('');
 })();

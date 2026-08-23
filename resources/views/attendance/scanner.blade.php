@@ -145,6 +145,18 @@
             const camId = cameras[cameras.length - 1].id;
             scanner.start(camId, { fps: 8, qrbox: { width: 250, height: 250 } }, (decoded) => punch(decoded), () => {});
         }).catch(() => {});
+
+        const stopScanner = async () => {
+            try {
+                await scanner.stop();
+                await scanner.clear();
+            } catch (_) {}
+        };
+
+        if (window.App?.registerPageCleanup) {
+            App.registerPageCleanup(stopScanner);
+        }
+        window.addEventListener('beforeunload', stopScanner);
     }
 })();
 </script>

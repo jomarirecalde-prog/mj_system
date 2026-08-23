@@ -59,17 +59,10 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="shift_id">Work schedule / shift</label>
-                <select name="shift_id" id="shift_id" class="form-select">
-                    <option value="">Use default (8:00 AM – 5:00 PM)</option>
-                    @foreach($shifts as $shift)
-                        <option value="{{ $shift->id }}" @selected(old('shift_id')==$shift->id)>
-                            {{ $shift->name }} ({{ substr($shift->time_in,0,5) }} – {{ substr($shift->time_out,0,5) }})
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+            @include('employees.partials._schedule-fields', [
+                'shifts' => $shifts,
+                'defaultTimes' => $defaultTimes,
+            ])
 
             <div class="form-group" style="grid-column:1/-1;">
                 <label class="form-hint">

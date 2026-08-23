@@ -171,6 +171,20 @@
         }).catch(() => {
             document.getElementById('qr-reader').innerHTML = '<div class="empty-state"><p class="text-muted">Camera access unavailable.</p></div>';
         });
+
+        const stopScanner = async () => {
+            if (!scanner) return;
+            try {
+                if (scanning) await scanner.stop();
+                await scanner.clear();
+            } catch (_) {}
+            scanning = false;
+        };
+
+        if (window.App?.registerPageCleanup) {
+            App.registerPageCleanup(stopScanner);
+        }
+        window.addEventListener('beforeunload', stopScanner);
     }
 })();
 </script>

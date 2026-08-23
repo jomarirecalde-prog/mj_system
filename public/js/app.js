@@ -11,6 +11,16 @@
     debounce,
     formatMoney,
     setLoading,
+    initPageContent,
+    registerPageCleanup: null,
+    navigateTo: null,
+  };
+
+  const pageCleanupHandlers = new Set();
+
+  window.App.registerPageCleanup = function (fn) {
+    if (typeof fn === 'function') pageCleanupHandlers.add(fn);
+    window.AppNavigation?.registerPageCleanup?.(fn);
   };
 
   function toast(message, type = 'info', duration = 4200) {
@@ -368,8 +378,11 @@
   }
 
   /* Confirm forms */
-  function initConfirmForms() {
-    document.querySelectorAll('[data-confirm]').forEach((form) => {
+  function initConfirmForms(root) {
+    const scope = root || document;
+    scope.querySelectorAll('[data-confirm]').forEach((form) => {
+      if (form.dataset.confirmBound === '1') return;
+      form.dataset.confirmBound = '1';
       form.addEventListener('submit', async (e) => {
         const msg = form.getAttribute('data-confirm');
         if (!msg) return;
@@ -378,6 +391,19 @@
         if (ok) form.submit();
       });
     });
+  }
+
+  function initFlashToasts(root) {
+    const scope = root || document;
+    scope.querySelectorAll('[data-toast]').forEach((el) => {
+      toast(el.textContent.trim(), el.dataset.toastType || 'info');
+      el.remove();
+    });
+  }
+
+  function initPageContent(root) {
+    initConfirmForms(root);
+    initFlashToasts(root);
   }
 
   /* Logout confirmation — intercept all .logout-form submissions */
@@ -518,10 +544,8 @@
     initNotificationBadge();
     initConfirmForms();
     initLogoutConfirmation();
+    initFlashToasts();
 
-    document.querySelectorAll('[data-toast]').forEach((el) => {
-      toast(el.textContent.trim(), el.dataset.toastType || 'info');
-      el.remove();
-    });
+    window.App.initPageContent = initPageContent;
   });
 })();

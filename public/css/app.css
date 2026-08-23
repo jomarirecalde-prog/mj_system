@@ -894,6 +894,88 @@ body.sidebar-is-collapsed .app-main {
   flex: 1;
 }
 
+.page-content.is-navigating-out {
+  opacity: 0.55;
+  transition: opacity 150ms ease;
+}
+
+.page-content.is-navigating-in {
+  animation: pageContentIn 200ms ease;
+}
+
+.page-content.is-nav-loading {
+  min-height: 12rem;
+  position: relative;
+}
+
+.page-content.is-nav-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(15, 118, 110, 0.06) 50%,
+    transparent 100%
+  );
+  animation: navShimmer 1.2s ease infinite;
+  pointer-events: none;
+}
+
+@keyframes pageContentIn {
+  from { opacity: 0.4; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes navShimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+.nav-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.nav-progress.is-active {
+  opacity: 1;
+}
+
+.nav-progress__bar {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--accent), #14b8a6);
+  transition: width 200ms ease;
+  box-shadow: 0 0 8px rgba(15, 118, 110, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-content.is-navigating-out,
+  .page-content.is-navigating-in {
+    transition: none;
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .page-content.is-nav-loading::after {
+    animation: none;
+    display: none;
+  }
+
+  .nav-progress,
+  .nav-progress__bar {
+    transition: none;
+  }
+}
+
 .page-header {
   display: flex;
   flex-wrap: wrap;
