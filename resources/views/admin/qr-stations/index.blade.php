@@ -188,6 +188,10 @@
 
     document.getElementById('open-create-station')?.addEventListener('click', () => createModal.showModal());
 
+    @if($errors->any() && !request()->has('edit'))
+        createModal.showModal();
+    @endif
+
     document.querySelectorAll('[data-close-modal]').forEach(btn => {
         btn.addEventListener('click', () => btn.closest('dialog')?.close());
     });
@@ -212,7 +216,11 @@
         if (!gen) return;
         e.preventDefault();
         const target = document.getElementById(gen.dataset.target);
-        const res = await fetch(@json(route('admin.qr-stations.generate-password')), { headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } });
+        const res = await fetch(@json(route('admin.qr-stations.generate-password')), {
+            headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+            credentials: 'same-origin',
+        });
+        if (!res.ok) return;
         const data = await res.json();
         if (data.password && target) {
             target.value = data.password;

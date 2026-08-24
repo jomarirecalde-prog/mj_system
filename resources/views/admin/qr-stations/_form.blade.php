@@ -5,22 +5,25 @@
 
 <div class="form-group">
     <label class="form-label" for="{{ $isEdit ? 'edit_' : '' }}station_name">Station Name <span class="text-danger">*</span></label>
-    <input type="text" name="station_name" id="{{ $isEdit ? 'edit_' : '' }}station_name" class="form-control" value="{{ old('station_name', $station?->station_name ?? '') }}" required maxlength="255" placeholder="Branch">
+    <input type="text" name="station_name" id="{{ $isEdit ? 'edit_' : '' }}station_name" class="form-control @error('station_name') is-invalid @enderror" value="{{ old('station_name', $station?->station_name ?? '') }}" required maxlength="255" placeholder="Branch">
+    @error('station_name')<p class="form-hint text-danger">{{ $message }}</p>@enderror
 </div>
 
 <div class="form-group">
     <label class="form-label" for="{{ $isEdit ? 'edit_' : '' }}station_code">Station ID <span class="text-danger">*</span></label>
-    <input type="text" name="station_code" id="{{ $isEdit ? 'edit_' : '' }}station_code" class="form-control" value="{{ old('station_code', $station?->station_code ?? '') }}" required maxlength="100" placeholder="STATION-001" style="text-transform:uppercase">
+    <input type="text" name="station_code" id="{{ $isEdit ? 'edit_' : '' }}station_code" class="form-control @error('station_code') is-invalid @enderror" value="{{ old('station_code', $station?->station_code ?? '') }}" required maxlength="100" placeholder="STATION-001" style="text-transform:uppercase">
     <p class="form-hint">Must be unique. Stored in uppercase.</p>
+    @error('station_code')<p class="form-hint text-danger">{{ $message }}</p>@enderror
 </div>
 
 <div class="form-group">
     <label class="form-label" for="{{ $isEdit ? 'edit_' : '' }}password">Station Password @if(!$isEdit)<span class="text-danger">*</span>@endif</label>
     <div class="pw-field">
-        <input type="password" name="password" id="{{ $isEdit ? 'edit_password' : 'create_password' }}" class="form-control" {{ $isEdit ? '' : 'required' }} minlength="8" maxlength="128" autocomplete="new-password">
+        <input type="password" name="password" id="{{ $isEdit ? 'edit_password' : 'create_password' }}" class="form-control @error('password') is-invalid @enderror" {{ $isEdit ? '' : 'required' }} minlength="8" maxlength="128" autocomplete="new-password">
         <button type="button" class="btn btn--secondary btn--sm js-generate-password" data-target="{{ $isEdit ? 'edit_password' : 'create_password' }}">Generate</button>
         <button type="button" class="btn btn--ghost btn--sm js-toggle-password" data-target="{{ $isEdit ? 'edit_password' : 'create_password' }}" aria-label="Toggle password visibility">Show</button>
     </div>
+    @error('password')<p class="form-hint text-danger">{{ $message }}</p>@enderror
     @if($isEdit)
         <p class="form-hint">Leave blank to keep the current password.</p>
     @endif
@@ -28,7 +31,8 @@
 
 <div class="form-group">
     <label class="form-label" for="{{ $isEdit ? 'edit_' : '' }}location">Location <span class="text-danger">*</span></label>
-    <input type="text" name="location" id="{{ $isEdit ? 'edit_' : '' }}location" class="form-control" value="{{ old('location', $station?->location ?? '') }}" required maxlength="255" placeholder="Branch">
+    <input type="text" name="location" id="{{ $isEdit ? 'edit_' : '' }}location" class="form-control @error('location') is-invalid @enderror" value="{{ old('location', $station?->location ?? '') }}" required maxlength="255" placeholder="Branch">
+    @error('location')<p class="form-hint text-danger">{{ $message }}</p>@enderror
 </div>
 
 <div class="form-group">

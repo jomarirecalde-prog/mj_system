@@ -10,8 +10,12 @@ use App\Services\StationDeviceAuthorizationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Throwable;
 
 class QrStationController extends Controller
 {
@@ -51,22 +55,40 @@ class QrStationController extends Controller
 
     public function store(Request $request): RedirectResponse|JsonResponse
     {
-        $data = $this->validatedStationData($request);
+        try {
+            $data = $this->validatedStationData($request);
 
-        $station = QrStation::query()->create([
-            ...$data,
-            'station_code' => Str::upper($data['station_code']),
-            'created_by' => $request->user()->id,
-        ]);
+            $station = DB::transaction(function () use ($data, $request) {
+                $station = QrStation::query()->create([
+                    ...$data,
+                    'station_code' => Str::upper($data['station_code']),
+                    'created_by' => $request->user()?->id,
+                ]);
 
-        $this->deviceAuth->logActivity(
-            $station,
-            null,
-            'station_created',
-            'QR station created.',
-            $request,
-            $request->user()
-        );
+                $this->deviceAuth->logActivity(
+                    $station,
+                    null,
+                    'station_created',
+                    'QR station created.',
+                    $request,
+                    $request->user()
+                );
+
+                return $station;
+            });
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            report($e);
+
+            if ($request->expectsJson()) {
+                return $this->jsonError('Unable to create station. Please try again.', 500);
+            }
+
+            return back()
+                ->withInput($request->except('password'))
+                ->with('error', 'Unable to create station. Please try again.');
+        }
 
         if ($request->expectsJson()) {
             return $this->jsonSuccess([
@@ -196,7 +218,12 @@ class QrStationController extends Controller
 
         $rules = [
             'station_name' => ['required', 'string', 'max:255'],
-            'station_code' => ['required', 'string', 'max:100', 'unique:qr_stations,station_code,'.$stationId],
+            'station_code' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('qr_stations', 'station_code')->ignore($stationId),
+            ],
             'location' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
             'building' => ['nullable', 'string', 'max:255'],
