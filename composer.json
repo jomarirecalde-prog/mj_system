@@ -55,6 +55,9 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
+        "vercel": [
+            "sh -c 'DB_URL=${DATABASE_URL_UNPOOLED:-$DB_URL} php artisan migrate --force --no-interaction'"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

@@ -1,7 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "regions": ["sin1"],
-  "buildCommand": "php artisan migrate --force --no-interaction",
   "builds": [
     {
       "src": "/api/index.php",
