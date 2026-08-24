@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "regions": ["sin1"],
+  "buildCommand": "php artisan migrate --force --no-interaction",
   "builds": [
     {
       "src": "/api/index.php",
@@ -39,6 +40,33 @@
     {
       "src": "/robots.txt",
       "dest": "/public/robots.txt"
+    },
+    {
+      "src": "/site.webmanifest",
+      "dest": "/public/site.webmanifest",
+      "headers": {
+        "Content-Type": "application/manifest+json"
+      }
+    },
+    {
+      "src": "/service-worker.js",
+      "dest": "/public/service-worker.js",
+      "headers": {
+        "Content-Type": "application/javascript; charset=utf-8",
+        "Service-Worker-Allowed": "/"
+      }
+    },
+    {
+      "src": "/offline.html",
+      "dest": "/public/offline.html"
+    },
+    {
+      "src": "/icons/(.*)",
+      "dest": "/public/icons/$1"
+    },
+    {
+      "src": "/favicon.png",
+      "dest": "/public/favicon.png"
     },
     {
       "src": "/(.*)",

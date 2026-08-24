@@ -50,6 +50,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('i/{qr_code}', [QrController::class, 'publicProfile'])->name('qr.public');
 
 Route::get('offline', [PwaController::class, 'offline'])->name('pwa.offline');
+Route::get('site.webmanifest', [PwaController::class, 'manifest'])->name('pwa.manifest');
+Route::get('service-worker.js', [PwaController::class, 'serviceWorker'])->name('pwa.service-worker');
 
 Route::prefix('station')->name('station.')->group(function (): void {
     Route::get('login', [StationAuthController::class, 'showLogin'])->name('login');
