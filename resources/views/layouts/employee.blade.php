@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — Employee Portal</title>
+    @php $pwaAppTitle = 'Employee Portal'; @endphp
+    @include('partials.pwa-head')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -52,6 +54,7 @@
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                 <span class="topbar__badge" id="notification-badge" data-poll-url="{{ route('employee.notifications.unread') }}">0</span>
             </a>
+            @include('partials.pwa-install-button', ['class' => 'btn btn--ghost btn--sm', 'showIcon' => false])
             <div class="topbar__user">
                 <span class="topbar__avatar">{{ strtoupper(substr($user->displayName(), 0, 1)) }}</span>
                 <span>{{ $user->displayName() }}</span>
@@ -75,6 +78,7 @@
 @include('partials.logout-confirmation-modal')
 
 <script src="{{ asset('js/app.js') }}"></script>
+<script src="{{ asset('js/pwa.js') }}"></script>
 @stack('scripts')
 </body>
 </html>

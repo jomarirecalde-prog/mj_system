@@ -482,6 +482,7 @@
       confirmText.textContent = 'Signing out...';
       confirmSpinner?.removeAttribute('hidden');
       pendingForm.dataset.logoutConfirmed = '1';
+      window.PWA?.clearSensitiveClientState?.();
       pendingForm.submit();
     });
 

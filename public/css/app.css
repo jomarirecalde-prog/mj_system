@@ -2407,3 +2407,201 @@ body.logout-modal-open {
   }
 }
 
+/* ── PWA / Installed App ── */
+
+html.is-installed-app {
+  --topbar-h: calc(3.25rem + env(safe-area-inset-top, 0px));
+}
+
+html.is-installed-app body {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html.is-installed-app .topbar {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+}
+
+html.is-installed-app .sidebar {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+html.is-installed-app .modal-backdrop,
+html.is-installed-app .modal {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html.is-installed-app .station-scanner__header {
+  padding-top: max(1rem, env(safe-area-inset-top, 0px));
+}
+
+.pwa-update-banner {
+  position: fixed;
+  left: max(1rem, env(safe-area-inset-left, 0px));
+  right: max(1rem, env(safe-area-inset-right, 0px));
+  bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  z-index: 9999;
+  background: var(--surface);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.15);
+  padding: 1rem 1.25rem;
+  animation: pwaSlideUp 0.25s ease;
+}
+
+.pwa-update-banner__content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+.pwa-update-banner__text {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--ink);
+  flex: 1;
+  min-width: 200px;
+}
+
+.pwa-update-banner__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.pwa-settings-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0.5rem 0.85rem;
+  background: var(--bg);
+  border-radius: 8px;
+}
+
+.pwa-settings-status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+[data-pwa-state="installable"] .pwa-settings-status__dot,
+[data-pwa-state="installable"] .pwa-settings-status {
+  color: var(--accent);
+}
+
+[data-pwa-state="installable"] .pwa-settings-status__dot {
+  background: var(--accent);
+}
+
+[data-pwa-state="installed"] .pwa-settings-status__dot,
+[data-pwa-state="installed"] .pwa-settings-status {
+  color: var(--ok);
+}
+
+[data-pwa-state="installed"] .pwa-settings-status__dot {
+  background: var(--ok);
+}
+
+[data-pwa-state="offline"] .pwa-settings-status__dot,
+[data-pwa-state="offline"] .pwa-settings-status {
+  color: var(--warn);
+}
+
+[data-pwa-state="offline"] .pwa-settings-status__dot {
+  background: var(--warn);
+}
+
+[data-pwa-state="update"] .pwa-settings-status__dot,
+[data-pwa-state="update"] .pwa-settings-status {
+  color: var(--accent-2);
+}
+
+[data-pwa-state="update"] .pwa-settings-status__dot {
+  background: var(--accent-2);
+}
+
+.pwa-offline-body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+.pwa-offline-page {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(1.5rem, env(safe-area-inset-top)) max(1.5rem, env(safe-area-inset-right)) max(1.5rem, env(safe-area-inset-bottom)) max(1.5rem, env(safe-area-inset-left));
+}
+
+.pwa-offline-card {
+  width: min(100%, 420px);
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 2rem 1.75rem;
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+}
+
+.pwa-offline-card__icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.25rem;
+  border-radius: 18px;
+  background: rgba(15, 118, 110, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.pwa-offline-card h1 {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.pwa-offline-card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  color: var(--warn);
+  background: rgba(180, 83, 9, 0.1);
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  margin-bottom: 1.25rem;
+}
+
+.pwa-offline-card__status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+@keyframes pwaSlideUp {
+  from { transform: translateY(1rem); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  html.is-installed-app .account-menu__dropdown,
+  html.is-installed-app .topbar__actions .btn {
+    min-height: 44px;
+  }
+}
+

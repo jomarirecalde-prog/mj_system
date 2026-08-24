@@ -34,6 +34,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PosController;
+use App\Http\Controllers\PwaController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\QrController;
 use App\Http\Controllers\ReportController;
@@ -47,6 +48,8 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('i/{qr_code}', [QrController::class, 'publicProfile'])->name('qr.public');
+
+Route::get('offline', [PwaController::class, 'offline'])->name('pwa.offline');
 
 Route::prefix('station')->name('station.')->group(function (): void {
     Route::get('login', [StationAuthController::class, 'showLogin'])->name('login');

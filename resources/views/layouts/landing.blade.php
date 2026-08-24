@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Home') — {{ setting('organization_name', 'QR Inventory System') }}</title>
     <meta name="description" content="@yield('meta_description', 'Centralized inventory management with QR codes, stock monitoring, and transaction tracking.')">
+    @include('partials.pwa-head')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,6 +20,7 @@
     @yield('content')
     <script src="{{ asset('js/app.js') }}"></script>
     <script src="{{ asset('js/landing.js') }}"></script>
+    <script src="{{ asset('js/pwa.js') }}"></script>
     @stack('scripts')
 </body>
 </html>

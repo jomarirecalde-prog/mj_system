@@ -3,9 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'QR Station') — {{ setting('organization_name', 'QR Inventory') }}</title>
-    @php $pwaAppTitle = 'QR Station'; @endphp
+    <meta name="theme-color" content="#0f172a">
+    <title>@yield('title', 'Offline') — QR System</title>
     @include('partials.pwa-head')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,13 +12,9 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     @stack('styles')
 </head>
-<body class="station-body">
-@yield('content')
-
-@include('partials.logout-confirmation-modal')
-
-<script src="{{ asset('js/app.js') }}"></script>
-<script src="{{ asset('js/pwa.js') }}"></script>
-@stack('scripts')
+<body class="pwa-offline-body">
+    @yield('content')
+    <script src="{{ asset('js/pwa.js') }}"></script>
+    @stack('scripts')
 </body>
 </html>

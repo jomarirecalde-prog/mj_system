@@ -90,6 +90,7 @@
                 <span class="station-scanner__status-dot"></span>
                 <span id="station-status-text">Connected</span>
             </span>
+            @include('partials.pwa-install-button', ['class' => 'station-scanner__logout', 'showIcon' => false])
             <form method="post" action="{{ route('station.logout') }}" class="mb-0 logout-form">
                 @csrf
                 <button type="submit" class="station-scanner__logout">Logout</button>

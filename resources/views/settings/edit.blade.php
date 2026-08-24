@@ -34,4 +34,26 @@
         </form>
     </div>
 </div>
+
+<div class="card" style="max-width:720px;" id="pwa-settings-card">
+    <div class="card__body">
+        <h2 class="card__title" style="margin-top:0;">Install Application</h2>
+        <p class="text-muted" style="margin-bottom:1rem;">Install this system on your device for faster access and a native app-like experience.</p>
+
+        <div class="pwa-settings-status" data-pwa-status>
+            <span class="pwa-settings-status__dot" aria-hidden="true"></span>
+            <span data-pwa-status-label>Browser Version</span>
+        </div>
+
+        <div class="pwa-settings-actions mt-2">
+            <button type="button" class="btn btn--primary" data-pwa-install hidden>Install App</button>
+            <p class="text-muted pwa-settings-hint" data-pwa-installed-only hidden style="margin:0;">
+                This device is running the installed application.
+            </p>
+            <p class="text-muted pwa-settings-hint" data-pwa-browser-only style="margin:0;font-size:.875rem;">
+                Installation is available in Chrome, Edge, and other supported browsers. On iPhone or iPad, use Safari's Share menu and choose "Add to Home Screen".
+            </p>
+        </div>
+    </div>
+</div>
 @endsection

@@ -15,6 +15,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — {{ setting('organization_name', 'QR Inventory') }}</title>
+    @include('partials.pwa-head')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -374,6 +375,7 @@
                             Account Settings
                         </a>
                     @endif
+                    @include('partials.pwa-install-button', ['showIcon' => true])
                     <form action="{{ route('logout') }}" method="post" class="account-menu__logout logout-form">
                         @csrf
                         <button type="submit" class="account-menu__item account-menu__item--danger" role="menuitem">
@@ -399,6 +401,7 @@
 
 <script src="{{ asset('js/app.js') }}"></script>
 <script src="{{ asset('js/navigation.js') }}"></script>
+<script src="{{ asset('js/pwa.js') }}"></script>
 @stack('scripts')
 </body>
 </html>
