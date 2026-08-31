@@ -12,7 +12,7 @@
  * localhost is treated as a secure context for development.
  */
 
-const CACHE_VERSION = 'qr-system-v1';
+const CACHE_VERSION = 'qr-system-v2';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -29,10 +29,14 @@ const PRECACHE_URLS = [
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/apple-touch-icon.png',
+  '/site.webmanifest',
 ];
 
 const STATIC_PATH_PREFIXES = ['/css/', '/js/', '/icons/', '/fonts/'];
-const STATIC_EXTENSIONS = ['.css', '.js', '.png', '.jpg', '.jpeg', '.webp', '.svg', '.woff', '.woff2', '.ttf', '.ico'];
+const STATIC_EXTENSIONS = ['.css', '.js', '.png', '.jpg', '.jpeg', '.webp', '.svg', '.woff', '.woff2', '.ttf', '.ico', '.webmanifest'];
+
+/** Handled by the browser — SW interception breaks auth redirects (e.g. Vercel SSO). */
+const BYPASS_SW_PATHS = ['/site.webmanifest', '/service-worker.js'];
 
 /** Paths that must always use the network (never cache responses). */
 const NETWORK_ONLY_PREFIXES = [
@@ -58,9 +62,9 @@ self.addEventListener('notificationclick', (event) => {
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches
-      .open(STATIC_CACHE)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
+    caches.open(STATIC_CACHE).then((cache) =>
+      Promise.allSettled(PRECACHE_URLS.map((url) => cache.add(url)))
+    )
   );
   // Do not skipWaiting here — wait for user confirmation via pwa.js
 });
@@ -111,12 +115,24 @@ function isNavigationRequest(request) {
   return request.mode === 'navigate' || (request.method === 'GET' && request.headers.get('Accept')?.includes('text/html'));
 }
 
+function isBypassedPath(url) {
+  const pathname = new URL(url).pathname;
+  return BYPASS_SW_PATHS.includes(pathname);
+}
+
+function isCrossOriginRedirect(request, response) {
+  return response.url && new URL(response.url).origin !== new URL(request.url).origin;
+}
+
 async function cacheFirst(request) {
   const cached = await caches.match(request);
   if (cached) return cached;
 
   try {
     const response = await fetch(request);
+    if (isCrossOriginRedirect(request, response)) {
+      throw new Error('Cross-origin redirect');
+    }
     if (response.ok && response.type === 'basic') {
       const cache = await caches.open(RUNTIME_CACHE);
       cache.put(request, response.clone());
@@ -125,32 +141,38 @@ async function cacheFirst(request) {
   } catch (error) {
     const fallback = await caches.match(request);
     if (fallback) return fallback;
-    throw error;
+    return Response.error();
   }
 }
 
 async function networkFirstNavigation(request) {
   try {
     const response = await fetch(request);
+    if (isCrossOriginRedirect(request, response)) {
+      throw new Error('Cross-origin redirect');
+    }
     // Do not cache HTML navigation responses — prevents stale/sensitive page exposure
     return response;
   } catch (error) {
     const offline = await caches.match('/offline.html');
     if (offline) return offline;
-    throw error;
+    return Response.error();
   }
 }
 
 async function networkFirst(request) {
   try {
     const response = await fetch(request);
+    if (isCrossOriginRedirect(request, response)) {
+      throw new Error('Cross-origin redirect');
+    }
     return response;
   } catch (error) {
     if (isStaticAsset(request.url)) {
       const cached = await caches.match(request);
       if (cached) return cached;
     }
-    throw error;
+    return Response.error();
   }
 }
 
@@ -160,6 +182,7 @@ self.addEventListener('fetch', (event) => {
 
   if (url.startsWith('chrome-extension://') || url.startsWith('moz-extension://')) return;
   if (request.method !== 'GET') return;
+  if (isBypassedPath(url)) return;
 
   // Skip cross-origin except Google Fonts (cache-first when fetched)
   const origin = self.location.origin;

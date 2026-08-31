@@ -98,10 +98,38 @@
     }
   }
 
+  function isManifestReachable() {
+    return fetch('/site.webmanifest', { credentials: 'same-origin', redirect: 'manual' })
+      .then(function (response) {
+        if (response.type === 'opaqueredirect' || response.status === 0) return false;
+        if (response.status === 401 || response.status === 403) return false;
+        return response.ok;
+      })
+      .catch(function () {
+        return false;
+      });
+  }
+
+  function unregisterServiceWorkers() {
+    if (!('serviceWorker' in navigator)) return Promise.resolve();
+
+    return navigator.serviceWorker.getRegistrations().then(function (registrations) {
+      return Promise.all(registrations.map(function (registration) {
+        return registration.unregister();
+      }));
+    });
+  }
+
   function registerServiceWorker() {
     if (!('serviceWorker' in navigator) || !isSecureContext()) return;
 
-    navigator.serviceWorker
+    isManifestReachable().then(function (reachable) {
+      if (!reachable) {
+        unregisterServiceWorkers();
+        return;
+      }
+
+      navigator.serviceWorker
       .register(SW_URL, { scope: SW_SCOPE })
       .then(function (registration) {
         swRegistration = registration;
@@ -126,6 +154,7 @@
       .catch(function () {
         // Silent fail — PWA is progressive enhancement
       });
+    });
 
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (window.__pwaReloading) return;
