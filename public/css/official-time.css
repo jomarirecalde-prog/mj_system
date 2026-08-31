@@ -117,7 +117,7 @@
 }
 
 .ot-comparison__col--requested .ot-comparison__range {
-    color: var(--primary, #2563eb);
+    color: var(--primary, #C8102E);
 }
 
 .ot-comparison__changes {
@@ -151,7 +151,7 @@
 }
 
 .ot-comparison__highlight--changed {
-    color: var(--primary, #2563eb);
+    color: var(--primary, #C8102E);
     font-weight: 600;
 }
 

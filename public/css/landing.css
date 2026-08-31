@@ -2,23 +2,25 @@
 .landing-body {
   --lp-bg: #ffffff;
   --lp-bg-alt: #f8fafc;
-  --lp-primary: #2563eb;
-  --lp-primary-dark: #1d4ed8;
-  --lp-primary-light: #eff6ff;
-  --lp-text: #111827;
-  --lp-muted: #6b7280;
-  --lp-border: #e5e7eb;
-  --lp-success: #166534;
+  --lp-primary: #C8102E;
+  --lp-primary-dark: #A50E26;
+  --lp-primary-light: #fef2f2;
+  --lp-text: #1C1C1C;
+  --lp-muted: #6B7280;
+  --lp-border: #E5E7EB;
+  --lp-success: #198754;
   --lp-success-bg: #f0fdf4;
   --lp-success-border: #bbf7d0;
-  --lp-error: #991b1b;
+  --lp-error: #8B0000;
   --lp-error-bg: #fef2f2;
   --lp-error-border: #fecaca;
-  --lp-warn: #b45309;
+  --lp-warn: #F5A900;
   --lp-warn-bg: #fffbeb;
-  --lp-station: #0f766e;
-  --lp-station-dark: #115e59;
-  --lp-station-light: #f0fdfa;
+  --lp-station: #C8102E;
+  --lp-station-dark: #A50E26;
+  --lp-station-light: #fef2f2;
+  --lp-accent: #FFC400;
+  --lp-dark: #121212;
   --lp-radius: 12px;
   --lp-radius-sm: 10px;
   --lp-radius-lg: 16px;
@@ -289,7 +291,7 @@
 }
 
 .lp-btn:focus-visible {
-  outline: 2px solid #93c5fd;
+  outline: 2px solid rgba(200, 16, 46, 0.45);
   outline-offset: 2px;
 }
 
@@ -629,10 +631,10 @@
   flex-shrink: 0;
 }
 
-.lp-preview__stat-icon--blue { background: #dbeafe; color: #2563eb; }
+.lp-preview__stat-icon--blue { background: #fef2f2; color: var(--lp-primary); }
 .lp-preview__stat-icon--green { background: #d1fae5; color: #059669; }
 .lp-preview__stat-icon--amber { background: #fef3c7; color: #d97706; }
-.lp-preview__stat-icon--purple { background: #ede9fe; color: #7c3aed; }
+.lp-preview__stat-icon--purple { background: #fef9c3; color: var(--gold, #F5A900); }
 
 .lp-preview__stat-label {
   display: block;
@@ -812,7 +814,7 @@
 }
 
 .lp-access__icon--primary { background: var(--lp-primary-light); color: var(--lp-primary); }
-.lp-access__icon--employee { background: #ede9fe; color: #7c3aed; }
+.lp-access__icon--employee { background: #fef2f2; color: var(--lp-primary); }
 .lp-access__icon--station { background: #ccfbf1; color: var(--lp-station); }
 
 .lp-access__title {
@@ -940,7 +942,7 @@
   left: 12%;
   right: 12%;
   height: 2px;
-  background: linear-gradient(90deg, var(--lp-primary) 0%, #bfdbfe 100%);
+  background: linear-gradient(90deg, var(--lp-primary) 0%, var(--lp-accent) 100%);
   opacity: 0.4;
 }
 
@@ -1286,7 +1288,7 @@
 
 .lp-station__panel {
   border-color: #99f6e4;
-  box-shadow: 0 12px 32px rgba(15, 118, 110, 0.08);
+  box-shadow: 0 12px 32px rgba(var(--primary-rgb), 0.08);
 }
 
 .lp-station__panel-header {

@@ -8,10 +8,10 @@
   --scan-space-2xl: 1.5rem;
   --scan-radius: var(--radius-sm, 8px);
   --scan-input-h: 2.75rem;
-  --scan-success: var(--ok, #15803d);
-  --scan-warn: var(--warn, #b45309);
-  --scan-danger: var(--danger, #b91c1c);
-  --scan-info: var(--accent, #0f766e);
+  --scan-success: var(--success, #198754);
+  --scan-warn: var(--warning, #F5A900);
+  --scan-danger: var(--danger, #C8102E);
+  --scan-info: var(--info, #3B82A0);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -46,8 +46,8 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--scan-radius);
-  background: rgba(15, 118, 110, 0.1);
-  color: var(--scan-info);
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary);
 }
 
 .scan-header__icon svg {
@@ -107,7 +107,7 @@
   max-height: min(70vh, 520px);
   border-radius: var(--radius);
   overflow: hidden;
-  background: #0f172a;
+  background: var(--dark);
   border: 2px solid var(--border);
 }
 
@@ -123,11 +123,11 @@
 .scan-frame {
   position: absolute;
   inset: 10%;
-  border: 2px solid rgba(45, 212, 191, 0.85);
+  border: 2px solid rgba(var(--gold-rgb), 0.85);
   border-radius: 12px;
   pointer-events: none;
   z-index: 2;
-  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.45);
+  box-shadow: 0 0 0 9999px rgba(18, 18, 18, 0.55);
 }
 
 .scan-frame__corners::before,
@@ -138,7 +138,7 @@
   position: absolute;
   width: 20px;
   height: 20px;
-  border-color: rgba(45, 212, 191, 0.95);
+  border-color: rgba(var(--gold-rgb), 0.95);
   border-style: solid;
 }
 
@@ -152,7 +152,7 @@
   left: 12%;
   right: 12%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(45, 212, 191, 0.9), transparent);
+  background: linear-gradient(90deg, transparent, rgba(var(--gold-rgb), 0.9), transparent);
   z-index: 3;
   pointer-events: none;
   animation: scanLine 2.5s ease-in-out infinite;
@@ -277,7 +277,7 @@
 }
 
 .scan-manual__input:focus {
-  outline: 2px solid rgba(15, 118, 110, 0.35);
+  outline: 2px solid rgba(var(--primary-rgb), 0.35);
   border-color: var(--scan-info);
 }
 
@@ -492,8 +492,8 @@
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: #0b1120;
-  color: #f8fafc;
+  background: var(--dark);
+  color: var(--off-white);
 }
 
 .scan-kiosk__header {
@@ -502,8 +502,8 @@
   align-items: center;
   gap: var(--scan-space-lg);
   padding: var(--scan-space-lg) var(--scan-space-xl);
-  background: rgba(11, 17, 32, 0.95);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  background: var(--surface-dark);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .scan-kiosk__station-name {
@@ -553,8 +553,8 @@
   font-weight: 600;
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
-  background: rgba(16, 185, 129, 0.15);
-  color: #6ee7b7;
+  background: rgba(25, 135, 84, 0.18);
+  color: #86efac;
 }
 
 .scan-kiosk__status.is-offline {
@@ -586,8 +586,8 @@
 }
 
 .scan-kiosk__btn:hover {
-  border-color: rgba(45, 212, 191, 0.5);
-  color: #5eead4;
+  border-color: rgba(var(--gold-rgb), 0.55);
+  color: var(--accent-gold);
   text-decoration: none;
 }
 
@@ -615,8 +615,8 @@
 .scan-kiosk .scan-viewport {
   width: min(100%, 560px);
   max-height: min(70vh, 560px);
-  border: 3px solid rgba(45, 212, 191, 0.45);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  border: 3px solid rgba(var(--gold-rgb), 0.65);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
 }
 
 .scan-kiosk__result {
@@ -776,7 +776,7 @@
 
 .scan-log-badge--success { background: #dcfce7; color: var(--scan-success); }
 .scan-log-badge--late { background: #fef3c7; color: var(--scan-warn); }
-.scan-log-badge--already { background: #e0e7ff; color: #4338ca; }
+.scan-log-badge--already { background: #e0f2fe; color: var(--info); }
 .scan-log-badge--invalid { background: #fee2e2; color: var(--scan-danger); }
 .scan-log-badge--inactive { background: #ffedd5; color: #c2410c; }
 .scan-log-badge--cooldown { background: #f1f5f9; color: var(--muted); }
@@ -802,7 +802,7 @@
 }
 
 .scan-logs-table tbody tr:hover {
-  background: rgba(15, 118, 110, 0.035);
+  background: rgba(var(--primary-rgb), 0.035);
 }
 
 .scan-logs-cards {

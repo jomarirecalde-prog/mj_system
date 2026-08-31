@@ -42,7 +42,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--qs-radius);
-  background: rgba(15, 118, 110, 0.1);
+  background: rgba(var(--primary-rgb), 0.1);
   color: var(--accent);
 }
 
@@ -520,8 +520,8 @@
 }
 
 .qs-device-panel--available {
-  border-color: rgba(15, 118, 110, 0.3);
-  background: linear-gradient(180deg, rgba(15, 118, 110, 0.04) 0%, transparent 100%);
+  border-color: rgba(var(--primary-rgb), 0.3);
+  background: linear-gradient(180deg, rgba(var(--primary-rgb), 0.04) 0%, transparent 100%);
 }
 
 .qs-device-panel__header {

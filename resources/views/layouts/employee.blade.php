@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     @stack('styles')
 </head>
-<body class="app-body">
+<body class="app-body emp-portal">
 @php
     $user = auth()->user();
     $orgName = setting('organization_name', 'QR Inventory');

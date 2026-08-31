@@ -73,10 +73,10 @@
   background: var(--muted);
 }
 
-.pos-status-indicator.is-ready .pos-status-indicator__dot { background: var(--accent); }
-.pos-status-indicator.is-scanning .pos-status-indicator__dot { background: #2563eb; animation: pos-pulse 1.2s ease infinite; }
-.pos-status-indicator.is-processing .pos-status-indicator__dot { background: var(--warn); }
-.pos-status-indicator.is-lookup .pos-status-indicator__dot { background: #2563eb; }
+.pos-status-indicator.is-ready .pos-status-indicator__dot { background: var(--success); }
+.pos-status-indicator.is-scanning .pos-status-indicator__dot { background: var(--accent-gold, #FFC400); animation: pos-pulse 1.2s ease infinite; }
+.pos-status-indicator.is-processing .pos-status-indicator__dot { background: var(--warning); }
+.pos-status-indicator.is-lookup .pos-status-indicator__dot { background: var(--info); }
 
 @keyframes pos-pulse {
   0%, 100% { opacity: 1; }
@@ -159,7 +159,7 @@
 .pos-search-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
 }
 
 .pos-module .pos-results { max-height: min(58vh, 520px); gap: var(--pos-space-sm); }
@@ -189,7 +189,7 @@
   padding: 0.3rem 0.65rem;
   border: 1px solid var(--accent);
   border-radius: var(--radius-sm, 8px);
-  background: rgba(15, 118, 110, 0.08);
+  background: rgba(var(--primary-rgb), 0.08);
   color: var(--accent);
   font-size: 0.78rem;
   font-weight: 600;
@@ -310,7 +310,7 @@
   cursor: pointer;
 }
 
-.pos-qty-btn:hover:not(:disabled) { background: rgba(15, 118, 110, 0.1); color: var(--accent); }
+.pos-qty-btn:hover:not(:disabled) { background: rgba(var(--primary-rgb), 0.1); color: var(--accent); }
 .pos-qty-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 .pos-qty-control .cart-qty {
@@ -366,11 +366,13 @@
 
 .pos-payment-summary__row--grand strong {
   font-family: var(--font-display);
-  color: var(--accent-2, #0f766e);
+  color: var(--primary);
+  font-size: 1.5rem;
 }
 
-.pos-module .pos-money-input__field { font-size: 1.35rem; min-height: 3rem; }
-.pos-module .pos-change-row.is-ok strong { font-size: 1.5rem; color: var(--accent-2, #0f766e); }
+.pos-module .pos-money-input__field { font-size: 1.35rem; min-height: 3rem; font-weight: 700; }
+.pos-module .pos-change-row.is-ok strong { font-size: 1.65rem; color: var(--success); font-family: var(--font-display); }
+.pos-module .pos-change-row.is-warn strong { font-size: 1.35rem; color: var(--warning); }
 
 .pos-quick-cash { display: flex; flex-wrap: wrap; gap: var(--pos-space-xs); margin-top: var(--pos-space-sm); }
 
@@ -384,7 +386,7 @@
   cursor: pointer;
 }
 
-.pos-quick-cash__btn:hover { border-color: var(--accent); background: rgba(15, 118, 110, 0.06); }
+.pos-quick-cash__btn:hover { border-color: var(--accent); background: rgba(var(--primary-rgb), 0.06); }
 
 .pos-checkout-btn { min-height: 3rem; font-size: 1rem; font-weight: 700; }
 
@@ -441,7 +443,7 @@
 
 .pos-status-badge--completed {
   background: rgba(15,118,110,0.1);
-  color: var(--accent-2,#0f766e);
+  color: var(--accent-2,#C8102E);
   border: 1px solid rgba(15,118,110,0.2);
 }
 
@@ -523,7 +525,7 @@
   margin-top: var(--pos-space-sm);
 }
 
-.pos-payment-card__row--change { font-size: 1.15rem; font-weight: 600; color: var(--accent-2,#0f766e); }
+.pos-payment-card__row--change { font-size: 1.15rem; font-weight: 600; color: var(--accent-2,#C8102E); }
 
 /* Receipt */
 .pos-receipt {
