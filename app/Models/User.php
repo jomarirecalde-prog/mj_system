@@ -181,6 +181,11 @@ class User extends Authenticatable implements CanResetPasswordContract
         return $this->hasMany(AttendanceCorrectionRequest::class);
     }
 
+    public function officialTimeRequests(): HasMany
+    {
+        return $this->hasMany(OfficialTimeRequest::class);
+    }
+
     /**
      * @return list<string>
      */

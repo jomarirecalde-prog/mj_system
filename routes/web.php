@@ -22,6 +22,7 @@ use App\Http\Controllers\Employee\CorrectionRequestController as EmployeeCorrect
 use App\Http\Controllers\Employee\DashboardController as EmployeeDashboardController;
 use App\Http\Controllers\Employee\DtrController as EmployeeDtrController;
 use App\Http\Controllers\Employee\EmployeeLoginController;
+use App\Http\Controllers\Employee\OfficialTimeRequestController as EmployeeOfficialTimeRequestController;
 use App\Http\Controllers\Employee\NotificationController as EmployeeNotificationController;
 use App\Http\Controllers\Employee\PasswordController as EmployeePasswordController;
 use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController;
@@ -33,6 +34,7 @@ use App\Http\Controllers\ImportExportController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OfficialTimeRequestController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\PwaController;
 use App\Http\Controllers\PurchaseController;
@@ -102,6 +104,11 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         Route::get('corrections', [EmployeeCorrectionRequestController::class, 'index'])->name('corrections.index');
         Route::get('corrections/create', [EmployeeCorrectionRequestController::class, 'create'])->name('corrections.create');
         Route::post('corrections', [EmployeeCorrectionRequestController::class, 'store'])->name('corrections.store');
+
+        Route::get('official-time', [EmployeeOfficialTimeRequestController::class, 'index'])->name('official-time.index');
+        Route::post('official-time', [EmployeeOfficialTimeRequestController::class, 'store'])->name('official-time.store');
+        Route::get('official-time/{officialTimeRequest}', [EmployeeOfficialTimeRequestController::class, 'show'])->name('official-time.show')->whereNumber('officialTimeRequest');
+        Route::post('official-time/{officialTimeRequest}/cancel', [EmployeeOfficialTimeRequestController::class, 'cancel'])->name('official-time.cancel')->whereNumber('officialTimeRequest');
 
         Route::get('notifications', [EmployeeNotificationController::class, 'index'])->name('notifications');
         Route::get('notifications/unread-count', [EmployeeNotificationController::class, 'unreadCount'])->name('notifications.unread');
@@ -247,6 +254,11 @@ Route::middleware(['auth', 'active'])->group(function (): void {
             Route::get('correction-requests', [AttendanceCorrectionController::class, 'requests'])->name('correction-requests.index');
             Route::post('correction-requests/{correctionRequest}/approve', [AttendanceCorrectionController::class, 'approveRequest'])->name('correction-requests.approve');
             Route::post('correction-requests/{correctionRequest}/reject', [AttendanceCorrectionController::class, 'rejectRequest'])->name('correction-requests.reject');
+
+            Route::get('official-time-requests', [OfficialTimeRequestController::class, 'index'])->name('official-time.index');
+            Route::get('official-time-requests/{officialTimeRequest}', [OfficialTimeRequestController::class, 'show'])->name('official-time.show')->whereNumber('officialTimeRequest');
+            Route::post('official-time-requests/{officialTimeRequest}/approve', [OfficialTimeRequestController::class, 'approve'])->name('official-time.approve')->whereNumber('officialTimeRequest');
+            Route::post('official-time-requests/{officialTimeRequest}/reject', [OfficialTimeRequestController::class, 'reject'])->name('official-time.reject')->whereNumber('officialTimeRequest');
 
             Route::get('settings', [AttendanceSettingController::class, 'edit'])->name('settings.edit');
             Route::put('settings', [AttendanceSettingController::class, 'update'])->name('settings.update');

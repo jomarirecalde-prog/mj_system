@@ -1,0 +1,301 @@
+/* Official Time Request module */
+
+.ot-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.ot-badge--pending { background: #fef3c7; color: #92400e; }
+.ot-badge--approved { background: #d1fae5; color: #065f46; }
+.ot-badge--rejected { background: #fee2e2; color: #991b1b; }
+.ot-badge--cancelled { background: #f3f4f6; color: #4b5563; }
+.ot-badge--default { background: #e5e7eb; color: #374151; }
+
+.ot-fieldset {
+    border: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+}
+
+.ot-fieldset__legend {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    color: var(--text, #111827);
+}
+
+.ot-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.ot-visual-summary {
+    background: var(--surface-2, #f9fafb);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+    text-align: center;
+}
+
+.ot-visual-summary__title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+    color: var(--muted, #6b7280);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ot-timeline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.ot-timeline__node {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.ot-timeline__node--break {
+    font-size: 0.9rem;
+    color: var(--muted, #6b7280);
+}
+
+.ot-timeline__label {
+    font-size: 0.75rem;
+    color: var(--muted, #6b7280);
+    margin: -0.1rem 0;
+}
+
+.ot-timeline__arrow {
+    color: var(--muted, #9ca3af);
+    font-size: 0.85rem;
+    line-height: 1;
+}
+
+.ot-comparison {
+    background: var(--surface-2, #f9fafb);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.ot-comparison__title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+}
+
+.ot-comparison__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.ot-comparison__col h3,
+.ot-comparison__col h4 {
+    font-size: 0.85rem;
+    margin: 0 0 0.5rem;
+    color: var(--muted, #6b7280);
+}
+
+.ot-comparison__range {
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+}
+
+.ot-comparison__col--requested .ot-comparison__range {
+    color: var(--primary, #2563eb);
+}
+
+.ot-comparison__changes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.875rem;
+}
+
+.ot-comparison__changes li {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid var(--border, #e5e7eb);
+}
+
+.ot-comparison__changes li:last-child {
+    border-bottom: none;
+}
+
+.ot-comparison__highlights {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--border, #e5e7eb);
+    font-size: 0.875rem;
+}
+
+.ot-comparison__highlight {
+    padding: 0.35rem 0;
+}
+
+.ot-comparison__highlight--changed {
+    color: var(--primary, #2563eb);
+    font-weight: 600;
+}
+
+.ot-form-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.ot-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.ot-empty__title {
+    font-weight: 600;
+    margin: 0 0 0.35rem;
+}
+
+.ot-empty__text {
+    color: var(--muted, #6b7280);
+    margin: 0 0 1rem;
+}
+
+.ot-mobile-cards {
+    display: none;
+}
+
+.ot-table-desktop {
+    display: block;
+}
+
+.ot-card {
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.ot-card__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.ot-card__title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.ot-card__dl {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0 0 0.75rem;
+    font-size: 0.875rem;
+}
+
+.ot-card__dl dt {
+    font-weight: 600;
+    display: inline;
+}
+
+.ot-card__dl dt::after {
+    content: ': ';
+}
+
+.ot-card__dl dd {
+    display: inline;
+    margin: 0;
+    color: var(--muted, #6b7280);
+}
+
+.ot-card__dl div {
+    display: block;
+}
+
+.ot-subheading {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 1rem 0 0.35rem;
+}
+
+.ot-conflict-alert {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.ot-conflict-alert ul {
+    margin: 0.5rem 0 0;
+    padding-left: 1.25rem;
+}
+
+.ot-review-card--approved {
+    border-left: 4px solid #10b981;
+}
+
+.ot-review-card--rejected {
+    border-left: 4px solid #ef4444;
+}
+
+.ot-btn-loading[hidden] {
+    display: none;
+}
+
+.ot-btn-text[hidden] {
+    display: none;
+}
+
+#ot-form.is-submitting .ot-btn-text {
+    display: none;
+}
+
+#ot-form.is-submitting .ot-btn-loading {
+    display: inline;
+}
+
+#ot-form.is-submitting #ot-submit-btn {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+    .ot-form-grid,
+    .ot-comparison__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ot-table-desktop {
+        display: none;
+    }
+
+    .ot-mobile-cards {
+        display: block;
+    }
+}
+
+@media (max-width: 390px) {
+    .ot-visual-summary,
+    .ot-comparison {
+        padding: 0.75rem;
+    }
+}

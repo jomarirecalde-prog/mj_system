@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AttendanceRecord;
 use App\Models\User;
 use App\Services\AttendanceService;
+use App\Services\OfficialTimeRequestService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -35,7 +36,9 @@ class AttendanceController extends Controller
             ->limit(15)
             ->get();
 
-        return view('attendance.dashboard', compact('counts', 'currentlyIn', 'recent', 'date'));
+        $pendingOfficialTime = OfficialTimeRequestService::pendingCount();
+
+        return view('attendance.dashboard', compact('counts', 'currentlyIn', 'recent', 'date', 'pendingOfficialTime'));
     }
 
     public function liveStats(Request $request): JsonResponse

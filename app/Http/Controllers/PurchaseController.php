@@ -153,9 +153,22 @@ class PurchaseController extends Controller
      */
     protected function formData(): array
     {
+        $inventoryItems = InventoryItem::query()
+            ->active()
+            ->orderBy('name')
+            ->get(['id', 'item_code', 'name', 'unit', 'unit_cost', 'quantity', 'inventory_type']);
+
         return [
             'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->get(),
-            'inventoryItems' => InventoryItem::query()->active()->orderBy('name')->get(['id', 'item_code', 'name', 'unit', 'unit_cost', 'quantity', 'inventory_type']),
+            'inventoryItems' => $inventoryItems,
+            'itemOptions' => $inventoryItems->map(fn ($i) => [
+                'id' => $i->id,
+                'code' => $i->item_code,
+                'name' => $i->name,
+                'stock' => $i->quantity,
+                'unit' => $i->unit,
+                'cost' => (float) $i->unit_cost,
+            ])->values(),
             'nextNumber' => $this->purchaseService->nextPurchaseNumber(),
         ];
     }

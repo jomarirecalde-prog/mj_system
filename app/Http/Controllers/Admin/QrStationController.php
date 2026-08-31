@@ -43,7 +43,16 @@ class QrStationController extends Controller
 
         $departments = Department::query()->where('is_active', true)->orderBy('name')->pluck('name');
 
-        return view('admin.qr-stations.index', compact('stations', 'departments'));
+        $stats = QrStation::query()
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
+                SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactive,
+                SUM(CASE WHEN authorized_device_id IS NOT NULL THEN 1 ELSE 0 END) as authorized
+            ")
+            ->first();
+
+        return view('admin.qr-stations.index', compact('stations', 'departments', 'stats'));
     }
 
     public function show(QrStation $qrStation): View

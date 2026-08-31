@@ -2,172 +2,303 @@
 
 @section('title', 'QR Scanner Stations')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/qr-stations.css') }}">
+@endpush
+
+@push('scripts')
+<script src="{{ asset('js/qr-stations.js') }}" defer></script>
+@endpush
+
 @section('content')
-<div class="page-header">
-    <div>
-        <h1>QR Scanner Stations</h1>
-        <p class="page-header__meta">Manage dedicated attendance scanning stations · one device per station</p>
-    </div>
-    <div class="page-header__actions">
-        <button type="button" class="btn btn--primary" id="open-create-station">Create Station</button>
-    </div>
-</div>
+<div class="qs-module">
+    <div aria-live="polite" aria-atomic="true" class="qs-live-region" id="qs-live-region"></div>
 
-@if(session('generated_password'))
-    <div class="alert alert--warning mb-2">
-        <strong>New station password:</strong>
-        <code id="generated-password-value">{{ session('generated_password') }}</code>
-        <button type="button" class="btn btn--ghost btn--sm ml-1" onclick="navigator.clipboard.writeText(document.getElementById('generated-password-value').textContent)">Copy</button>
-    </div>
-@endif
-
-<div class="card mb-2">
-    <div class="card__body">
-        <form method="get" class="filter-row">
-            <div class="form-group mb-0" style="flex:1;min-width:180px">
-                <input type="search" name="search" class="form-control" placeholder="Search name, ID, location…" value="{{ request('search') }}">
+    <header class="qs-page-header">
+        <div class="qs-page-header__left">
+            <span class="qs-page-header__icon" aria-hidden="true">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+            </span>
+            <div>
+                <h1 class="qs-page-header__title">QR Scanner Stations</h1>
+                <p class="qs-page-header__desc">Manage dedicated attendance scanning stations and authorized devices.</p>
             </div>
-            <div class="form-group mb-0" style="min-width:140px">
-                <select name="status" class="form-select" onchange="this.form.submit()">
-                    <option value="">All statuses</option>
-                    <option value="active" @selected(request('status') === 'active')>Active</option>
-                    <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn--secondary">Filter</button>
-            @if(request()->hasAny(['search', 'status']))
-                <a href="{{ route('admin.qr-stations.index') }}" class="btn btn--ghost">Clear</a>
-            @endif
-        </form>
-    </div>
-</div>
+        </div>
+        <div class="qs-page-header__actions">
+            <button type="button" class="btn btn--primary" id="open-create-station">
+                + Create Station
+            </button>
+        </div>
+    </header>
 
-<div class="card">
-    <div class="table-wrap">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Station Name</th>
-                    <th>Station ID</th>
-                    <th>Location</th>
-                    <th>Assigned Device</th>
-                    <th>Device Status</th>
-                    <th>Last Activity</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                    <th class="text-right">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($stations as $station)
-                    @php
-                        $device = $station->authorizedDevice;
-                        $deviceStatus = $station->deviceStatusLabel();
-                    @endphp
-                    <tr>
-                        <td><strong>{{ $station->station_name }}</strong></td>
-                        <td><code>{{ $station->station_code }}</code></td>
-                        <td>{{ $station->location }}</td>
-                        <td>{{ $device?->displayName() ?? '—' }}</td>
-                        <td>
-                            @if($deviceStatus === 'Authorized')
-                                <span class="badge badge--success">Authorized</span>
-                            @elseif($deviceStatus === 'Revoked')
-                                <span class="badge badge--danger">Revoked</span>
-                            @else
-                                <span class="badge badge--muted">Unassigned</span>
-                            @endif
-                        </td>
-                        <td>{{ $station->last_activity_at ? ph_datetime($station->last_activity_at) : '—' }}</td>
-                        <td>
-                            @if($station->isActive())
-                                <span class="badge badge--success">Active</span>
-                            @else
-                                <span class="badge badge--muted">Inactive</span>
-                            @endif
-                        </td>
-                        <td>{{ ph_datetime($station->created_at, 'M j, Y') }}</td>
-                        <td class="text-right">
-                            <div class="table-actions">
-                                <a href="{{ route('admin.qr-stations.show', $station) }}" class="btn btn--ghost btn--sm">Details</a>
-                                <button type="button" class="btn btn--ghost btn--sm js-edit-station"
-                                    data-station="{{ json_encode($station->only(['id', 'station_name', 'station_code', 'location', 'description', 'building', 'department', 'floor_area', 'timezone', 'status'])) }}">Edit</button>
-                                @if($station->isActive())
-                                    <form method="post" action="{{ route('admin.qr-stations.deactivate', $station) }}" class="inline-form">@csrf @method('PATCH')<button type="submit" class="btn btn--ghost btn--sm">Deactivate</button></form>
-                                @else
-                                    <form method="post" action="{{ route('admin.qr-stations.activate', $station) }}" class="inline-form">@csrf @method('PATCH')<button type="submit" class="btn btn--ghost btn--sm">Activate</button></form>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="9" class="text-center text-muted py-3">No QR stations yet. Create one to get started.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-    @if($stations->hasPages())
-        <div class="card__body pt-0">@include('partials.pagination', ['paginator' => $stations])</div>
+    @if(session('generated_password'))
+        <div class="qs-password-alert" role="status">
+            <strong>New station password:</strong>
+            <code id="generated-password-value">{{ session('generated_password') }}</code>
+            <button type="button" class="btn btn--ghost btn--sm js-qs-copy-password" data-target="generated-password-value">Copy</button>
+        </div>
     @endif
+
+    @isset($stats)
+        <div class="qs-summary" aria-label="Station summary">
+            <div class="qs-summary__card">
+                <div class="qs-summary__label">Total Stations</div>
+                <div class="qs-summary__value">{{ $stats->total ?? 0 }}</div>
+            </div>
+            <div class="qs-summary__card qs-summary__card--ok">
+                <div class="qs-summary__label">Active Stations</div>
+                <div class="qs-summary__value">{{ $stats->active ?? 0 }}</div>
+            </div>
+            <div class="qs-summary__card qs-summary__card--muted">
+                <div class="qs-summary__label">Inactive Stations</div>
+                <div class="qs-summary__value">{{ $stats->inactive ?? 0 }}</div>
+            </div>
+            <div class="qs-summary__card qs-summary__card--accent">
+                <div class="qs-summary__label">Authorized Devices</div>
+                <div class="qs-summary__value">{{ $stats->authorized ?? 0 }}</div>
+            </div>
+            <div class="qs-summary__card">
+                <div class="qs-summary__label">Available Stations</div>
+                <div class="qs-summary__value">{{ ($stats->total ?? 0) - ($stats->authorized ?? 0) }}</div>
+            </div>
+        </div>
+    @endisset
+
+    <div class="card qs-filters">
+        <div class="card__body">
+            <form method="get" action="{{ route('admin.qr-stations.index') }}" id="qs-filters-form">
+                <div class="qs-filters__bar">
+                    <div class="qs-search">
+                        <svg class="qs-search__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="search" name="search" class="qs-search__input" placeholder="Search station, ID, location…" value="{{ request('search') }}" aria-label="Search stations">
+                    </div>
+                    <div class="qs-filters__field">
+                        <label class="form-label" for="filter-status">Status</label>
+                        <select name="status" id="filter-status" class="form-select">
+                            <option value="">All</option>
+                            <option value="active" @selected(request('status') === 'active')>Active</option>
+                            <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
+                        </select>
+                    </div>
+                    <div class="qs-filters__actions">
+                        <button type="submit" class="btn btn--secondary">Filter</button>
+                        @if(request()->hasAny(['search', 'status']))
+                            <a href="{{ route('admin.qr-stations.index') }}" class="btn btn--ghost">Clear</a>
+                        @endif
+                    </div>
+                    <button type="button" class="btn btn--secondary qs-filters__mobile-toggle" id="qs-filters-mobile-toggle" aria-expanded="false" aria-controls="qs-filters-drawer">Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="qs-filters__drawer-backdrop" id="qs-filters-drawer-backdrop" aria-hidden="true"></div>
+    <div class="qs-filters__drawer" id="qs-filters-drawer" role="dialog" aria-label="Filter stations">
+        <h2 class="qs-filters__drawer-title">Filters</h2>
+        <div class="form-group">
+            <label class="form-label" for="mobile-search">Search</label>
+            <input type="search" id="mobile-search" class="form-control" data-qs-sync="search" value="{{ request('search') }}" placeholder="Search station, ID, location…">
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="mobile-status">Status</label>
+            <select id="mobile-status" class="form-select" data-qs-sync="status">
+                <option value="">All</option>
+                <option value="active" @selected(request('status') === 'active')>Active</option>
+                <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
+            </select>
+        </div>
+        <button type="button" class="btn btn--primary btn--block" id="qs-filters-mobile-apply">Apply Filters</button>
+    </div>
+
+    <div class="card">
+        @if($stations->isEmpty())
+            <div class="qs-empty">
+                <p class="qs-empty__title">No QR stations yet</p>
+                <p>Create a station to authorize dedicated attendance scanning devices.</p>
+                <button type="button" class="btn btn--primary mt-2" onclick="document.getElementById('open-create-station')?.click()">+ Create Station</button>
+            </div>
+        @else
+            <div class="qs-table-wrap qs-table-desktop">
+                <table class="qs-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Station</th>
+                            <th scope="col">Station ID</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Device</th>
+                            <th scope="col">Device Status</th>
+                            <th scope="col">Last Activity</th>
+                            <th scope="col">Station Status</th>
+                            <th scope="col">Created</th>
+                            <th scope="col" class="text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($stations as $station)
+                            @php $device = $station->authorizedDevice; @endphp
+                            <tr>
+                                <td>
+                                    <span class="qs-cell-primary">{{ $station->station_name }}</span>
+                                </td>
+                                <td><code class="qs-code">{{ $station->station_code }}</code></td>
+                                <td>{{ $station->location }}</td>
+                                <td>{{ $device?->displayName() ?? '—' }}</td>
+                                <td>@include('partials.qr-station-device-status', ['station' => $station])</td>
+                                <td>{{ $station->last_activity_at ? ph_datetime($station->last_activity_at) : '—' }}</td>
+                                <td>
+                                    <span class="qs-station-status qs-station-status--{{ $station->isActive() ? 'active' : 'inactive' }}">
+                                        <span class="qs-station-status__dot" aria-hidden="true"></span>
+                                        {{ $station->isActive() ? 'ACTIVE' : 'INACTIVE' }}
+                                    </span>
+                                </td>
+                                <td>{{ ph_datetime($station->created_at, 'M j, Y') }}</td>
+                                <td>
+                                    <div class="qs-table__actions">
+                                        <a href="{{ route('admin.qr-stations.show', $station) }}" class="btn btn--ghost btn--sm">Details</a>
+                                        <button type="button" class="btn btn--ghost btn--sm js-qs-edit-station" data-station-id="{{ $station->id }}"
+                                            data-station="{{ json_encode($station->only(['id', 'station_name', 'station_code', 'location', 'description', 'building', 'department', 'floor_area', 'timezone', 'status'])) }}">Edit</button>
+                                        <div class="qs-menu">
+                                            <button type="button" class="btn btn--ghost btn--sm qs-menu__toggle" aria-haspopup="true" aria-expanded="false" aria-label="More actions for {{ $station->station_name }}">More</button>
+                                            <div class="qs-menu__panel" role="menu">
+                                                @if($station->isActive())
+                                                    <button type="button" class="qs-menu__item" role="menuitem" data-qs-trigger-modal="confirm-deactivate-{{ $station->id }}">Deactivate</button>
+                                                @else
+                                                    <button type="button" class="qs-menu__item" role="menuitem" data-qs-trigger-modal="confirm-activate-{{ $station->id }}">Activate</button>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="qs-mobile-cards">
+                @foreach($stations as $station)
+                    @php $device = $station->authorizedDevice; @endphp
+                    <article class="qs-card-row">
+                        <div class="qs-card-row__head">
+                            <div>
+                                <div class="qs-cell-primary">{{ $station->station_name }}</div>
+                                <code class="qs-code">{{ $station->station_code }}</code>
+                            </div>
+                            <span class="qs-station-status qs-station-status--{{ $station->isActive() ? 'active' : 'inactive' }}">
+                                <span class="qs-station-status__dot" aria-hidden="true"></span>
+                                {{ $station->isActive() ? 'ACTIVE' : 'INACTIVE' }}
+                            </span>
+                        </div>
+                        <div class="qs-card-row__grid">
+                            <div>
+                                <span class="qs-card-row__label">Location</span>
+                                {{ $station->location }}
+                            </div>
+                            <div>
+                                <span class="qs-card-row__label">Device</span>
+                                {{ $device?->displayName() ?? '—' }}
+                            </div>
+                            <div>
+                                <span class="qs-card-row__label">Device Status</span>
+                                @include('partials.qr-station-device-status', ['station' => $station])
+                            </div>
+                            <div>
+                                <span class="qs-card-row__label">Last Activity</span>
+                                {{ $station->last_activity_at ? ph_datetime($station->last_activity_at) : '—' }}
+                            </div>
+                        </div>
+                        <div class="qs-card-row__actions">
+                            <a href="{{ route('admin.qr-stations.show', $station) }}" class="btn btn--ghost btn--sm">Details</a>
+                            <button type="button" class="btn btn--ghost btn--sm js-qs-edit-station" data-station-id="{{ $station->id }}"
+                                data-station="{{ json_encode($station->only(['id', 'station_name', 'station_code', 'location', 'description', 'building', 'department', 'floor_area', 'timezone', 'status'])) }}">Edit</button>
+                            @if($station->isActive())
+                                <button type="button" class="btn btn--ghost btn--sm" data-qs-trigger-modal="confirm-deactivate-{{ $station->id }}">Deactivate</button>
+                            @else
+                                <button type="button" class="btn btn--ghost btn--sm" data-qs-trigger-modal="confirm-activate-{{ $station->id }}">Activate</button>
+                            @endif
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        @endif
+
+        @if($stations->hasPages())
+            <div class="card__body pt-0">@include('partials.pagination', ['paginator' => $stations])</div>
+        @endif
+    </div>
 </div>
+
+{{-- Per-station activate/deactivate modals --}}
+@foreach($stations as $station)
+    <dialog class="qs-modal" id="confirm-deactivate-{{ $station->id }}">
+        <form method="post" action="{{ route('admin.qr-stations.deactivate', $station) }}" class="qs-modal__form" data-qs-submit>
+            @csrf @method('PATCH')
+            <div class="qs-modal__header">
+                <h2 class="qs-modal__title">Deactivate Station?</h2>
+                <button type="button" class="qs-modal__close" data-qs-close-modal aria-label="Close">&times;</button>
+            </div>
+            <div class="qs-modal__body">
+                <p class="qs-modal__note">Devices will no longer be able to use <strong>{{ $station->station_name }}</strong> while it is inactive.</p>
+            </div>
+            <div class="qs-modal__footer">
+                <button type="button" class="btn btn--ghost" data-qs-close-modal>Cancel</button>
+                <button type="submit" class="btn btn--primary" data-qs-loading-text="Processing…">Deactivate</button>
+            </div>
+        </form>
+    </dialog>
+    <dialog class="qs-modal" id="confirm-activate-{{ $station->id }}">
+        <form method="post" action="{{ route('admin.qr-stations.activate', $station) }}" class="qs-modal__form" data-qs-submit>
+            @csrf @method('PATCH')
+            <div class="qs-modal__header">
+                <h2 class="qs-modal__title">Activate Station?</h2>
+                <button type="button" class="qs-modal__close" data-qs-close-modal aria-label="Close">&times;</button>
+            </div>
+            <div class="qs-modal__body">
+                <p class="qs-modal__note">Re-enable <strong>{{ $station->station_name }}</strong> for attendance scanning.</p>
+            </div>
+            <div class="qs-modal__footer">
+                <button type="button" class="btn btn--ghost" data-qs-close-modal>Cancel</button>
+                <button type="submit" class="btn btn--primary" data-qs-loading-text="Processing…">Activate</button>
+            </div>
+        </form>
+    </dialog>
+@endforeach
 
 {{-- Create modal --}}
-<dialog class="modal" id="create-station-modal">
-    <form method="post" action="{{ route('admin.qr-stations.store') }}" class="modal__form">
+<dialog class="qs-modal" id="create-station-modal">
+    <form method="post" action="{{ route('admin.qr-stations.store') }}" class="qs-modal__form" data-qs-submit>
         @csrf
-        <div class="modal__header">
-            <h2 class="modal__title">Create QR Station</h2>
-            <button type="button" class="modal__close" data-close-modal aria-label="Close">&times;</button>
+        <div class="qs-modal__header">
+            <h2 class="qs-modal__title">Create QR Station</h2>
+            <button type="button" class="qs-modal__close" data-qs-close-modal aria-label="Close">&times;</button>
         </div>
-        <div class="modal__body">
-            @include('admin.qr-stations._form', ['station' => null])
+        <div class="qs-modal__body">
+            @include('admin.qr-stations._form', ['station' => null, 'showExtendedFields' => true, 'departments' => $departments])
         </div>
-        <div class="modal__footer">
-            <button type="button" class="btn btn--ghost" data-close-modal>Cancel</button>
-            <button type="submit" class="btn btn--primary">Create Station</button>
+        <div class="qs-modal__footer">
+            <button type="button" class="btn btn--ghost" data-qs-close-modal>Cancel</button>
+            <button type="submit" class="btn btn--primary" data-qs-loading-text="Creating…">Create Station</button>
         </div>
     </form>
 </dialog>
 
 {{-- Edit modal --}}
-<dialog class="modal" id="edit-station-modal">
-    <form method="post" id="edit-station-form" class="modal__form">
+<dialog class="qs-modal" id="edit-station-modal">
+    <form method="post" id="edit-station-form" class="qs-modal__form" data-qs-submit>
         @csrf
         @method('PUT')
-        <div class="modal__header">
-            <h2 class="modal__title">Edit Station</h2>
-            <button type="button" class="modal__close" data-close-modal aria-label="Close">&times;</button>
+        <div class="qs-modal__header">
+            <h2 class="qs-modal__title">Edit Station</h2>
+            <button type="button" class="qs-modal__close" data-qs-close-modal aria-label="Close">&times;</button>
         </div>
-        <div class="modal__body" id="edit-station-body"></div>
-        <div class="modal__footer">
-            <button type="button" class="btn btn--ghost" data-close-modal>Cancel</button>
-            <button type="submit" class="btn btn--primary">Save Changes</button>
+        <div class="qs-modal__body" id="edit-station-body"></div>
+        <div class="qs-modal__footer">
+            <button type="button" class="btn btn--ghost" data-qs-close-modal>Cancel</button>
+            <button type="submit" class="btn btn--primary" data-qs-loading-text="Saving…">Save Changes</button>
         </div>
     </form>
 </dialog>
 @endsection
-
-@push('styles')
-<style>
-.filter-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
-.table-actions { display: flex; flex-wrap: wrap; gap: 0.35rem; justify-content: flex-end; }
-.inline-form { display: inline; }
-.modal { border: 0; border-radius: 14px; padding: 0; max-width: 560px; width: calc(100% - 2rem); box-shadow: 0 24px 48px rgba(15,23,42,.18); }
-.modal::backdrop { background: rgba(15,23,42,.45); }
-.modal__form { display: flex; flex-direction: column; max-height: 90vh; }
-.modal__header, .modal__footer { padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
-.modal__header { border-bottom: 1px solid var(--border); }
-.modal__footer { border-top: 1px solid var(--border); justify-content: flex-end; }
-.modal__body { padding: 1.25rem; overflow: auto; }
-.modal__title { margin: 0; font-size: 1.125rem; }
-.modal__close { border: 0; background: transparent; font-size: 1.5rem; line-height: 1; cursor: pointer; color: var(--muted); }
-.pw-field { display: flex; gap: 0.5rem; align-items: stretch; }
-.pw-field .form-control { flex: 1; }
-.confirm-modal { max-width: 480px; }
-</style>
-@endpush
 
 @php
     $editFormTemplate = view('admin.qr-stations._form', [
@@ -179,65 +310,19 @@
 
 @push('scripts')
 <script>
-(function () {
-    const createModal = document.getElementById('create-station-modal');
-    const editModal = document.getElementById('edit-station-modal');
-    const editForm = document.getElementById('edit-station-form');
-    const editBody = document.getElementById('edit-station-body');
-    const formTemplate = @json($editFormTemplate);
-
-    document.getElementById('open-create-station')?.addEventListener('click', () => createModal.showModal());
-
-    @if($errors->any() && !request()->has('edit'))
-        createModal.showModal();
-    @endif
-
-    document.querySelectorAll('[data-close-modal]').forEach(btn => {
-        btn.addEventListener('click', () => btn.closest('dialog')?.close());
-    });
-
-    document.querySelectorAll('.js-edit-station').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const station = JSON.parse(btn.dataset.station);
-            editForm.action = @json(url('admin/qr-stations')) + '/' + station.id;
-            editBody.innerHTML = formTemplate;
-            Object.entries(station).forEach(([key, val]) => {
-                const field = editBody.querySelector('[name="' + key + '"]');
-                if (field) field.value = val ?? '';
-            });
-            const pw = editBody.querySelector('[name="password"]');
-            if (pw) { pw.value = ''; pw.placeholder = 'Leave blank to keep current password'; pw.removeAttribute('required'); }
-            editModal.showModal();
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-qs-trigger-modal]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.getElementById(btn.dataset.qsTriggerModal)?.showModal();
         });
     });
 
-    document.addEventListener('click', async e => {
-        const gen = e.target.closest('.js-generate-password');
-        if (!gen) return;
-        e.preventDefault();
-        const target = document.getElementById(gen.dataset.target);
-        const res = await fetch(@json(route('admin.qr-stations.generate-password')), {
-            headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-            credentials: 'same-origin',
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.password && target) {
-            target.value = data.password;
-            target.type = 'text';
-        }
+    window.QrStations.initIndex({
+        formTemplate: @json($editFormTemplate),
+        updateBaseUrl: @json(url('admin/qr-stations')),
+        openCreateOnError: @json($errors->any() && !request()->has('edit')),
+        editId: @json(request('edit')),
     });
-
-    document.addEventListener('click', e => {
-        const toggle = e.target.closest('.js-toggle-password');
-        if (!toggle) return;
-        e.preventDefault();
-        const input = document.getElementById(toggle.dataset.target);
-        if (!input) return;
-        const show = input.type === 'password';
-        input.type = show ? 'text' : 'password';
-        toggle.textContent = show ? 'Hide' : 'Show';
-    });
-})();
+});
 </script>
 @endpush

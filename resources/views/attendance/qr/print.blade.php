@@ -1,14 +1,32 @@
 @extends('layouts.print')
 
-@section('title', 'Print Employee QR')
+@section('title', 'Print Employee QR — ' . $user->displayName())
+
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/attendance-admin.css') }}">
+<style>
+    @media print {
+        body { margin: 0; background: #fff; }
+    }
+</style>
+@endpush
 
 @section('content')
-<div style="text-align:center;padding:2rem;">
-    <h1 style="margin-bottom:.25rem;">{{ $user->displayName() }}</h1>
-    <p>{{ $user->employee_id }} · {{ $user->department }} · {{ $user->position }}</p>
-    <img src="data:{{ $qrMime }};base64,{{ $qrImage }}" alt="QR" style="width:240px;height:240px;margin:1rem auto;">
-    <p style="font-size:1.25rem;font-weight:700;">{{ $qr->code }}</p>
-    <p class="text-muted">Attendance QR · Do not share sensitive data</p>
+<div class="aa-print-qr">
+    @if(setting('organization_name'))
+        <div class="aa-print-qr__org">{{ setting('organization_name') }}</div>
+    @endif
+    <div class="aa-print-qr__badge">Attendance QR</div>
+    <h1 class="aa-print-qr__name">{{ $user->displayName() }}</h1>
+    <p class="aa-print-qr__meta">
+        {{ $user->employee_id }}<br>
+        {{ $user->department ?? '—' }} · {{ $user->position ?? '—' }}
+    </p>
+    <img src="data:{{ $qrMime }};base64,{{ $qrImage }}" alt="Employee attendance QR code" class="aa-print-qr__image">
+    <div class="aa-print-qr__code">{{ $qr->code }}</div>
+    <div class="aa-print-qr__notice">
+        <p>Use this QR code for attendance scanning.</p>
+        <p><strong>Do not share or reproduce this QR code.</strong></p>
+    </div>
 </div>
-<script>window.print()</script>
 @endsection

@@ -71,7 +71,8 @@
         'attendance.schedules.*',
         'attendance.shifts.*',
         'attendance.corrections.*',
-        'attendance.correction-requests.*'
+        'attendance.correction-requests.*',
+        'attendance.official-time.*'
     );
     $attendanceReportsActive = request()->routeIs(
         'attendance.reports.*',
@@ -211,6 +212,9 @@
                             @if($isAdmin)
                                 <a href="{{ route('attendance.corrections.index') }}" class="sidebar__link sidebar__link--nested {{ request()->routeIs('attendance.corrections.*') || request()->routeIs('attendance.correction-requests.*') ? 'is-active' : '' }}" data-nav-paths="/attendance/corrections*,/attendance/correction-requests*" data-tooltip="DTR Corrections">
                                     <span class="sidebar__label">DTR Corrections</span>
+                                </a>
+                                <a href="{{ route('attendance.official-time.index') }}" class="sidebar__link sidebar__link--nested {{ request()->routeIs('attendance.official-time.*') ? 'is-active' : '' }}" data-nav-paths="/attendance/official-time-requests*" data-tooltip="Official Time Requests">
+                                    <span class="sidebar__label">Official Time Requests</span>
                                 </a>
                             @endif
                         </div>

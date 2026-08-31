@@ -11,7 +11,10 @@
     nav.classList.remove('is-open');
     toggle.setAttribute('aria-expanded', 'false');
     toggle.setAttribute('aria-label', 'Open menu');
-    if (panel) panel.setAttribute('hidden', '');
+    document.body.classList.remove('lp-nav-open');
+    if (panel && window.matchMedia('(max-width: 900px)').matches) {
+      panel.setAttribute('hidden', '');
+    }
   }
 
   function openNav() {
@@ -19,6 +22,7 @@
     nav.classList.add('is-open');
     toggle.setAttribute('aria-expanded', 'true');
     toggle.setAttribute('aria-label', 'Close menu');
+    document.body.classList.add('lp-nav-open');
     if (panel) panel.removeAttribute('hidden');
   }
 
@@ -43,11 +47,82 @@
       if (window.innerWidth > 900) {
         nav.classList.remove('is-open');
         toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('lp-nav-open');
         if (panel) panel.removeAttribute('hidden');
       } else if (!nav.classList.contains('is-open') && panel) {
         panel.setAttribute('hidden', '');
       }
     });
+  }
+
+  // Sticky nav shadow on scroll
+  if (nav) {
+    var scrollTicking = false;
+    function updateNavScroll() {
+      nav.classList.toggle('is-scrolled', window.scrollY > 8);
+      scrollTicking = false;
+    }
+    window.addEventListener('scroll', function () {
+      if (!scrollTicking) {
+        scrollTicking = true;
+        requestAnimationFrame(updateNavScroll);
+      }
+    }, { passive: true });
+    updateNavScroll();
+  }
+
+  // Active section navigation indicator
+  var navLinks = document.querySelectorAll('[data-nav-section]');
+  var sections = [];
+
+  navLinks.forEach(function (link) {
+    var id = link.getAttribute('data-nav-section');
+    var section = document.getElementById(id);
+    if (section) sections.push({ id: id, el: section });
+  });
+
+  if (sections.length && navLinks.length) {
+    function setActiveNav(sectionId) {
+      navLinks.forEach(function (link) {
+        var isActive = link.getAttribute('data-nav-section') === sectionId;
+        link.classList.toggle('is-active', isActive);
+        if (isActive) {
+          link.setAttribute('aria-current', 'true');
+        } else {
+          link.removeAttribute('aria-current');
+        }
+      });
+    }
+
+    if ('IntersectionObserver' in window) {
+      var visibleSections = {};
+      var navHeight = '64px';
+      if (nav) {
+        var computedNavHeight = getComputedStyle(nav).getPropertyValue('--lp-nav-h').trim();
+        if (computedNavHeight) navHeight = computedNavHeight;
+      }
+      var navObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          visibleSections[entry.target.id] = entry.isIntersecting ? entry.intersectionRatio : 0;
+        });
+
+        var bestId = null;
+        var bestRatio = 0;
+        sections.forEach(function (s) {
+          var ratio = visibleSections[s.id] || 0;
+          if (ratio > bestRatio) {
+            bestRatio = ratio;
+            bestId = s.id;
+          }
+        });
+
+        if (bestId) setActiveNav(bestId);
+      }, { rootMargin: '-' + navHeight + ' 0px -50% 0px', threshold: [0, 0.1, 0.25, 0.5] });
+
+      sections.forEach(function (s) {
+        navObserver.observe(s.el);
+      });
+    }
   }
 
   function focusLoginEmail() {
@@ -65,6 +140,15 @@
       window.setTimeout(function () {
         stationCode.focus({ preventScroll: true });
       }, reduceMotion ? 0 : 350);
+    }
+  }
+
+  function focusFirstInvalid() {
+    var invalid = document.querySelector('.lp-control--invalid .lp-input, .lp-input[aria-invalid="true"]');
+    if (invalid) {
+      window.setTimeout(function () {
+        invalid.focus({ preventScroll: true });
+      }, reduceMotion ? 0 : 200);
     }
   }
 
@@ -101,7 +185,7 @@
     scrollToHash(href, href === '#login' || link.hasAttribute('data-focus-login'));
   });
 
-  // Password visibility
+  // Password visibility — inventory login
   var toggleBtn = document.getElementById('toggle-password');
   var passwordInput = document.getElementById('password');
 
@@ -188,13 +272,15 @@
 
   if (hasStationErrors || hash === '#qr-station') {
     scrollToHash('#qr-station', false);
+    if (hasStationErrors) focusFirstInvalid();
   } else if (hasErrors || hash === '#login') {
     scrollToHash('#login', true);
+    if (hasErrors) focusFirstInvalid();
   } else if (hash && document.querySelector(hash)) {
     scrollToHash(hash, false);
   }
 
-  // Gentle reveal
+  // Gentle scroll reveal
   if (!reduceMotion && 'IntersectionObserver' in window) {
     var items = document.querySelectorAll('.lp-reveal');
     var observer = new IntersectionObserver(function (entries) {

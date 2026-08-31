@@ -48,31 +48,6 @@
 </div>
 @endsection
 
-@push('styles')
-<style>
-.emp-cal-legend { display:flex; flex-wrap:wrap; gap:.75rem 1.25rem; margin-bottom:1rem; font-size:.9rem; }
-.emp-cal-dot { display:inline-block; width:.7rem; height:.7rem; border-radius:50%; margin-right:.35rem; vertical-align:middle; }
-.emp-cal-dot.present { background:#16a34a; }
-.emp-cal-dot.late { background:#d97706; }
-.emp-cal-dot.absent { background:#dc2626; }
-.emp-cal-dot.on_leave { background:#2563eb; }
-.emp-cal-dot.rest_day { background:#94a3b8; }
-.emp-cal-dot.incomplete { background:#7c3aed; }
-.emp-cal__head, .emp-cal__grid { display:grid; grid-template-columns:repeat(7,1fr); gap:.35rem; }
-.emp-cal__head { margin-bottom:.35rem; text-align:center; font-weight:600; color:var(--muted); font-size:.85rem; }
-.emp-cal__cell { min-height:4.5rem; border:1px solid var(--border, #e2e8f0); border-radius:.5rem; background:#fff; padding:.4rem; text-align:left; cursor:pointer; }
-.emp-cal__cell.is-empty { background:transparent; border-color:transparent; cursor:default; }
-.emp-cal__day { display:block; font-weight:700; }
-.emp-cal__status { display:block; font-size:.7rem; color:var(--muted); margin-top:.25rem; line-height:1.2; }
-.emp-cal__cell.status-present { border-left:4px solid #16a34a; }
-.emp-cal__cell.status-late { border-left:4px solid #d97706; }
-.emp-cal__cell.status-absent { border-left:4px solid #dc2626; }
-.emp-cal__cell.status-on_leave, .emp-cal__cell.status-official_business { border-left:4px solid #2563eb; }
-.emp-cal__cell.status-rest_day { border-left:4px solid #94a3b8; }
-.emp-cal__cell.status-incomplete, .emp-cal__cell.status-undertime { border-left:4px solid #7c3aed; }
-</style>
-@endpush
-
 @push('scripts')
 <script>
 (function () {

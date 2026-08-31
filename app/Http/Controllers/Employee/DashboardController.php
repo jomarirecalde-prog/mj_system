@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
 use App\Services\EmployeePortalService;
+use App\Services\OfficialTimeRequestService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
@@ -19,8 +20,10 @@ class DashboardController extends Controller
         $today = $this->portal->todayCard($user);
         $summary = $this->portal->monthSummary($user);
         $schedule = $user->activeSchedule;
+        $officialTimePending = OfficialTimeRequestService::pendingCountForUser($user->id);
+        $latestOfficialTime = $user->officialTimeRequests()->latest()->first();
 
-        return view('employee.dashboard', compact('user', 'today', 'summary', 'schedule'));
+        return view('employee.dashboard', compact('user', 'today', 'summary', 'schedule', 'officialTimePending', 'latestOfficialTime'));
     }
 
     public function live(): JsonResponse

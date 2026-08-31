@@ -22,7 +22,7 @@
 <div class="card mb-2">
     <div class="card__header"><h2 class="card__title">Current Schedule</h2></div>
     <div class="card__body">
-        <p style="font-weight:600;margin-bottom:.75rem;">{{ $workDays ?: '—' }}</p>
+        <p class="emp-schedule-days">{{ $workDays ?: '—' }}</p>
         <dl class="dl-grid">
             <div class="dl-item"><dt>Time In</dt><dd>{{ $fmt($resolved['time_in'] ?? null) }}</dd></div>
             <div class="dl-item"><dt>Time Out</dt><dd>{{ $fmt($resolved['time_out'] ?? null) }}</dd></div>
