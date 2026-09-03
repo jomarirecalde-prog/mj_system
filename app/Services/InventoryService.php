@@ -9,6 +9,8 @@ use App\Models\InventoryTransaction;
 use App\Models\TransferRecord;
 use App\Models\User;
 use App\Support\InventoryTransactionType;
+use App\Support\PartNumber;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -27,6 +29,11 @@ class InventoryService
     public function createItem(array $data, User $user): InventoryItem
     {
         return DB::transaction(function () use ($data, $user) {
+            $manualPartNumber = filled($data['part_number'] ?? null);
+            $data['part_number'] = $manualPartNumber
+                ? PartNumber::normalize((string) $data['part_number'])
+                : PartNumber::generate();
+
             $this->assertUniqueIdentifiers($data);
 
             if (empty($data['qr_code'])) {
@@ -52,14 +59,14 @@ class InventoryService
 
             $item = new InventoryItem(Arr::only($data, (new InventoryItem)->getFillable()));
             $item->recalculateTotalValue();
-            $item->save();
+            $this->saveItemWithUniqueGuard($item, $manualPartNumber);
 
             $this->recordHistory(
                 $item,
                 'created',
                 $user,
                 null,
-                $item->item_code,
+                $item->part_number,
                 0,
                 'Inventory item created',
                 $item->id,
@@ -71,7 +78,7 @@ class InventoryService
             $this->notificationService->notifyAdmins(
                 'inventory.created',
                 'New inventory item',
-                sprintf('Item %s (%s) was created.', $item->name, $item->item_code),
+                sprintf('Item %s (%s) was created.', $item->name, $item->part_number),
             );
 
             if ($initialQuantity > 0) {
@@ -110,18 +117,37 @@ class InventoryService
                 ]);
             }
 
+            if (array_key_exists('part_number', $data)) {
+                $data['part_number'] = PartNumber::normalize((string) ($data['part_number'] ?? ''));
+            }
+
             $this->assertUniqueIdentifiers($data, $item->id);
 
             // Quantity must only change through inventory transactions.
             unset($data['quantity']);
 
             $previous = $item->getOriginal();
+            $previousPartNumber = (string) ($previous['part_number'] ?? $item->part_number ?? '');
             $fillable = array_values(array_diff($item->getFillable(), ['quantity']));
 
             $item->fill(Arr::only($data, $fillable));
             $item->updated_by = $user->id;
             $item->recalculateTotalValue();
-            $item->save();
+            $this->saveItemWithUniqueGuard($item, true);
+
+            if ($previousPartNumber !== (string) $item->part_number) {
+                $this->recordHistory(
+                    $item,
+                    'part_number',
+                    $user,
+                    $previousPartNumber,
+                    (string) $item->part_number,
+                    (float) $item->quantity,
+                    sprintf('Part Number changed from %s to %s.', $previousPartNumber, $item->part_number),
+                    $item->id,
+                    InventoryItem::class,
+                );
+            }
 
             $this->recordHistory(
                 $item,
@@ -813,7 +839,7 @@ class InventoryService
      */
     protected function assertUniqueIdentifiers(array $data, ?int $ignoreItemId = null): void
     {
-        foreach (['item_code', 'serial_number', 'qr_code'] as $field) {
+        foreach (['part_number', 'item_code', 'serial_number', 'qr_code'] as $field) {
             if (! array_key_exists($field, $data) || $data[$field] === null || $data[$field] === '') {
                 continue;
             }
@@ -826,10 +852,64 @@ class InventoryService
 
             if ($query->exists()) {
                 throw ValidationException::withMessages([
-                    $field => [sprintf('The %s is already in use.', str_replace('_', ' ', $field))],
+                    $field => [$field === 'part_number'
+                        ? PartNumber::DUPLICATE_MESSAGE
+                        : sprintf('The %s is already in use.', str_replace('_', ' ', $field))],
                 ]);
             }
         }
+    }
+
+    protected function saveItemWithUniqueGuard(InventoryItem $item, bool $manualPartNumber): void
+    {
+        $attempts = 0;
+        $maxAttempts = $manualPartNumber ? 1 : 6;
+
+        while (true) {
+            try {
+                $item->save();
+
+                return;
+            } catch (UniqueConstraintViolationException $e) {
+                $attempts++;
+                $isPartNumberConflict = str_contains($e->getMessage(), 'part_number');
+
+                if ($isPartNumberConflict && $manualPartNumber) {
+                    throw ValidationException::withMessages([
+                        'part_number' => [PartNumber::DUPLICATE_MESSAGE],
+                    ]);
+                }
+
+                if ($isPartNumberConflict && $attempts < $maxAttempts) {
+                    $item->part_number = PartNumber::generate();
+
+                    continue;
+                }
+
+                $this->rethrowDuplicateIdentifier($e);
+            }
+        }
+    }
+
+    protected function rethrowDuplicateIdentifier(UniqueConstraintViolationException $e): never
+    {
+        $message = $e->getMessage();
+        $fields = [
+            'part_number' => PartNumber::DUPLICATE_MESSAGE,
+            'item_code' => 'The item code is already in use.',
+            'serial_number' => 'The serial number is already in use.',
+            'qr_code' => 'The QR code is already in use.',
+        ];
+
+        foreach ($fields as $field => $text) {
+            if (str_contains($message, $field)) {
+                throw ValidationException::withMessages([
+                    $field => [$text],
+                ]);
+            }
+        }
+
+        throw $e;
     }
 
     /**

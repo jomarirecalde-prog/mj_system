@@ -6,7 +6,7 @@
 <div class="page-header">
     <div>
         <h1>Stock in</h1>
-        <p class="page-header__meta">{{ $item->item_code }} — {{ $item->name }} (current: {{ $item->quantity }} {{ $item->unit }})</p>
+        <p class="page-header__meta">{{ $item->labeledName() }} (current: {{ $item->quantity }} {{ $item->unit }})</p>
     </div>
     <a href="{{ route('inventory.show', $item) }}" class="btn btn--secondary">Cancel</a>
 </div>

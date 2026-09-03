@@ -2,12 +2,16 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\NormalizesPartNumber;
 use App\Models\InventoryItem;
+use App\Support\PartNumber;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class InventoryUpdateRequest extends FormRequest
 {
+    use NormalizesPartNumber;
+
     public function authorize(): bool
     {
         return $this->user()?->canModifyInventory() ?? false;
@@ -23,6 +27,7 @@ class InventoryUpdateRequest extends FormRequest
 
         return [
             'item_code' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('inventory_items', 'item_code')->ignore($item->id)],
+            'part_number' => ['required', 'string', 'max:'.PartNumber::MAX_LENGTH, 'regex:'.PartNumber::PATTERN, Rule::unique('inventory_items', 'part_number')->ignore($item->id)],
             'qr_code' => ['sometimes', 'nullable', 'string', 'max:255', Rule::unique('inventory_items', 'qr_code')->ignore($item->id)],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],

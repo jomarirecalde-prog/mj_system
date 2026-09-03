@@ -24,7 +24,8 @@
                 <div class="qr-label__org">{{ $org }}</div>
                 <img src="data:{{ $mime }};base64,{{ $payload['qr_image'] }}" alt="QR" width="140" height="140">
                 <div class="qr-label__name">{{ \Illuminate\Support\Str::limit($printItem->name, 48) }}</div>
-                <div class="qr-label__code">{{ $printItem->item_code }}</div>
+                <div class="qr-label__code">{{ $printItem->part_number }}</div>
+                <div class="qr-label__name">{{ $printItem->item_code }}</div>
                 <div class="qr-label__name">S/N: {{ $printItem->serial_number ?: '—' }}</div>
                 <div class="qr-label__code">{{ $printItem->qr_code }}</div>
             </div>
@@ -36,7 +37,8 @@
             <div class="qr-label__org">{{ $org }}</div>
             <img src="data:{{ $defaultMime }};base64,{{ $qrImage }}" alt="QR" width="180" height="180">
             <div class="qr-label__name">{{ $item->name }}</div>
-            <div class="qr-label__code">{{ $item->item_code }}</div>
+            <div class="qr-label__code">{{ $item->part_number }}</div>
+            <div class="qr-label__name">{{ $item->item_code }}</div>
             <div class="qr-label__name">S/N: {{ $item->serial_number ?: '—' }}</div>
             <div class="qr-label__code">{{ $item->qr_code }}</div>
         </div>

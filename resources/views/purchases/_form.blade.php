@@ -171,7 +171,7 @@
                                         <option value="{{ $inv->id }}"
                                             data-cost="{{ $inv->unit_cost }}"
                                             @selected(($line['inventory_item_id'] ?? '') == $inv->id)>
-                                            {{ $inv->item_code }} — {{ $inv->name }} (stock: {{ $inv->quantity }} {{ $inv->unit }})
+                                            {{ $inv->part_number }} — {{ $inv->name }} (stock: {{ $inv->quantity }} {{ $inv->unit }})
                                         </option>
                                     @endforeach
                                 </select>

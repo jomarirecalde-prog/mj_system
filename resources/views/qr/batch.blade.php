@@ -34,7 +34,8 @@
                         <thead>
                             <tr>
                                 <th style="width:40px;"><input type="checkbox" id="select-all-items"></th>
-                                <th>Code</th>
+                                <th>Part Number</th>
+                                <th>Item Code</th>
                                 <th>Name</th>
                                 <th>QR</th>
                             </tr>
@@ -43,12 +44,13 @@
                         @forelse($items as $row)
                             <tr>
                                 <td><input type="checkbox" name="item_ids[]" value="{{ $row->id }}" class="item-check"></td>
+                                <td>{{ $row->part_number }}</td>
                                 <td>{{ $row->item_code }}</td>
                                 <td>{{ $row->name }}</td>
                                 <td class="text-muted">{{ Str::limit($row->qr_code, 24) }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="4"><div class="empty-state">No active items.</div></td></tr>
+                            <tr><td colspan="5"><div class="empty-state">No active items.</div></td></tr>
                         @endforelse
                         </tbody>
                     </table>

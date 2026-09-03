@@ -47,8 +47,8 @@
             <div class="scan-manual">
                 <p class="scan-manual__label">Can't scan?</p>
                 <form id="manual-scan-form" class="scan-manual__row">
-                    <label class="sr-only" for="qr_payload">QR Code / Item Code</label>
-                    <input type="text" id="qr_payload" name="qr_payload" class="scan-manual__input" placeholder="QR Code / Item Code" autocomplete="off">
+                    <label class="sr-only" for="qr_payload">QR Code / Part Number / Item Code</label>
+                    <input type="text" id="qr_payload" name="qr_payload" class="scan-manual__input" placeholder="QR Code / Part Number / Item Code" autocomplete="off">
                     <button type="submit" class="btn btn--primary" id="manual-scan-btn">Search Item</button>
                 </form>
             </div>
@@ -118,6 +118,7 @@
 
         let html = '<p class="scan-item-name">' + esc(item.name) + '</p>';
         html += '<dl class="scan-item-grid">';
+        html += '<div class="scan-item-field"><dt>Part Number</dt><dd>' + esc(item.part_number || '—') + '</dd></div>';
         html += '<div class="scan-item-field"><dt>Item Code</dt><dd>' + esc(item.item_code) + '</dd></div>';
         html += '<div class="scan-item-field"><dt>Current Stock</dt><dd>' + esc(item.quantity) + ' ' + esc(item.unit) + lowStockHtml + '</dd></div>';
         html += '<div class="scan-item-field"><dt>Status</dt><dd>' + esc(item.status) + '</dd></div>';

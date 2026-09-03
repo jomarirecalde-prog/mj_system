@@ -11,6 +11,7 @@ use App\Models\InventoryTransaction;
 use App\Models\Supplier;
 use App\Models\User;
 use App\Support\InventoryTransactionType;
+use App\Support\PartNumber;
 use Illuminate\Database\Seeder;
 
 class InventorySeeder extends Seeder
@@ -199,6 +200,11 @@ class InventorySeeder extends Seeder
             $itemData['unit'] = $itemData['unit'] ?? 'pcs';
             $itemData['inventory_type'] = $itemData['inventory_type'] ?? InventoryItem::TYPE_CONSUMABLE;
             $itemData['date_acquired'] = $itemData['date_acquired'] ?? now('Asia/Manila')->subMonths(2)->toDateString();
+
+            $existing = InventoryItem::query()->where('item_code', $itemData['item_code'])->first();
+            $itemData['part_number'] = $itemData['part_number']
+                ?? $existing?->part_number
+                ?? PartNumber::generate();
 
             // Persist quantity, then ensure an opening ledger row exists.
             $item = InventoryItem::query()->updateOrCreate(

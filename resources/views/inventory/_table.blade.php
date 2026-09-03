@@ -3,6 +3,7 @@
     @foreach($items as $row)
         @php
             $rowId = $row['id'] ?? $row->id;
+            $rowPart = $row['part_number'] ?? $row->part_number ?? null;
             $rowCode = $row['item_code'] ?? $row->item_code;
             $rowName = $row['name'] ?? $row->name;
             $rowQty = $row['quantity'] ?? $row->quantity;
@@ -10,16 +11,22 @@
             $rowStatus = $row['status'] ?? $row->status;
             $rowCondition = $row['condition'] ?? $row->condition;
             $rowValue = $row['total_value'] ?? $row->total_value;
+            $rowBrand = $row['brand'] ?? $row->brand ?? null;
+            $rowModel = $row['model'] ?? $row->model ?? null;
+            $rowBrandModel = trim(implode(' ', array_filter([$rowBrand, $rowModel])));
             $rowCategory = $row['category']['name'] ?? $row->category?->name ?? '—';
             $rowLocation = $row['location']['name'] ?? $row->location?->name ?? '—';
             $qtyItem = is_object($row) ? $row : null;
             $isLow = $qtyItem && method_exists($qtyItem, 'isLowStock') && $qtyItem->isLowStock();
         @endphp
         <tr>
+            <td class="inv-col-part"><span class="inv-part-number">{{ $rowPart ?: '—' }}</span></td>
             <td>
                 <a href="{{ route('inventory.show', $rowId) }}" class="inv-item-link">
                     <span class="inv-item-link__name">{{ $rowName }}</span>
-                    <span class="inv-item-link__code">{{ $rowCode }}</span>
+                    @if($rowBrandModel)
+                        <span class="inv-item-link__meta">{{ $rowBrandModel }}</span>
+                    @endif
                 </a>
             </td>
             <td>{{ $rowCategory }}</td>

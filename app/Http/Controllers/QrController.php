@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\InventoryItem;
 use App\Models\QrScanLog;
 use App\Services\QrCodeService;
+use App\Support\PartNumber;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class QrController extends Controller
 
     public function publicProfile(string $qr_code): RedirectResponse
     {
-        $item = InventoryItem::query()->where('qr_code', $qr_code)->first();
+        $item = $this->findItemByScanPayload($qr_code);
 
         if ($item === null) {
             abort(404, 'Item not found.');
@@ -43,7 +44,7 @@ class QrController extends Controller
 
         return $this->qrCodeService->download(
             $item->qr_code,
-            $item->item_code.'.'.$format,
+            $item->part_number.'.'.$format,
             $format,
         );
     }
@@ -61,7 +62,7 @@ class QrController extends Controller
     {
         $this->authorizeRoles(['admin', 'staff']);
 
-        $items = InventoryItem::query()->active()->orderBy('item_code')->get(['id', 'item_code', 'name', 'qr_code']);
+        $items = InventoryItem::query()->active()->orderBy('part_number')->get(['id', 'part_number', 'item_code', 'name', 'qr_code']);
 
         return view('qr.batch', compact('items'));
     }
@@ -78,7 +79,7 @@ class QrController extends Controller
 
         $items = InventoryItem::query()
             ->whereIn('id', $request->input('item_ids'))
-            ->orderBy('item_code')
+            ->orderBy('part_number')
             ->get();
 
         $layout = $request->input('layout');
@@ -113,7 +114,7 @@ class QrController extends Controller
             return $this->jsonError('Invalid QR code.', 422, ['code' => 'invalid']);
         }
 
-        $item = InventoryItem::query()->where('qr_code', $payload)->first();
+        $item = $this->findItemByScanPayload($payload);
 
         if ($item === null) {
             $this->logScan(null, $payload, false, 'Item not found.', $user?->id, $request);
@@ -154,6 +155,24 @@ class QrController extends Controller
             'is_consumable' => $item->isConsumable(),
             'is_low_stock' => $item->isLowStock(),
         ]);
+    }
+
+    protected function findItemByScanPayload(string $payload): ?InventoryItem
+    {
+        $payload = trim($payload);
+        $normalized = PartNumber::normalize($payload);
+
+        return InventoryItem::query()
+            ->where(function ($query) use ($payload, $normalized) {
+                $query->where('qr_code', $payload)
+                    ->orWhere('part_number', $normalized)
+                    ->orWhere('item_code', $payload);
+
+                if ($normalized !== '' && $normalized !== $payload) {
+                    $query->orWhere('item_code', $normalized);
+                }
+            })
+            ->first();
     }
 
     protected function logScan(?int $itemId, string $payload, bool $success, string $message, ?int $userId, Request $request): void

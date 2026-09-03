@@ -8,7 +8,7 @@
     <div>
         <h1>{{ $isConsume ? 'Consume item' : 'Issue item' }}</h1>
         <p class="page-header__meta">
-            {{ $item->item_code }} — {{ $item->name }}
+            {{ $item->labeledName() }}
             · Available: <strong>{{ $item->quantity }} {{ $item->unit }}</strong>
             @if($item->isLowStock())
                 · <span class="badge badge--warn">⚠️ Low Stock</span>

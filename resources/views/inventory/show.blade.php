@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $item->item_code)
+@section('title', $item->part_number ?: $item->item_code)
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/inventory.css') }}">
@@ -22,7 +22,8 @@
         <div class="inv-show-hero__top">
             <div>
                 <h1 class="inv-show-hero__title">{{ $item->name }}</h1>
-                <p class="inv-show-hero__code">{{ $item->item_code }}</p>
+                <p class="inv-show-hero__part">{{ $item->part_number }}</p>
+                <p class="inv-show-hero__code">Item Code: {{ $item->item_code }}</p>
                 <div style="margin-top:0.5rem;">@include('partials.status-badge', ['status' => $item->status])</div>
                 <div class="inv-show-hero__meta">
                     @if($item->category)
@@ -129,6 +130,8 @@
 
             <div class="inv-tab-panel is-active" id="inv-tab-overview" role="tabpanel" aria-labelledby="tab-overview">
                 <dl class="inv-detail-grid">
+                    <div class="inv-detail-item"><dt>Part Number</dt><dd><strong>{{ $item->part_number }}</strong></dd></div>
+                    <div class="inv-detail-item"><dt>Item Code</dt><dd>{{ $item->item_code }}</dd></div>
                     <div class="inv-detail-item"><dt>Inventory Type</dt><dd>{{ $item->isAsset() ? 'Non-consumable / Asset' : 'Consumable' }}</dd></div>
                     <div class="inv-detail-item"><dt>Category</dt><dd>{{ $item->category?->name ?? '—' }}</dd></div>
                     <div class="inv-detail-item"><dt>Location</dt><dd>{{ $item->location?->name ?? '—' }}</dd></div>
@@ -142,6 +145,7 @@
 
             <div class="inv-tab-panel" id="inv-tab-product" role="tabpanel" aria-labelledby="tab-product">
                 <dl class="inv-detail-grid">
+                    <div class="inv-detail-item"><dt>Part Number</dt><dd><strong>{{ $item->part_number }}</strong></dd></div>
                     <div class="inv-detail-item"><dt>Brand</dt><dd>{{ $item->brand ?? '—' }}</dd></div>
                     <div class="inv-detail-item"><dt>Model</dt><dd>{{ $item->model ?? '—' }}</dd></div>
                     <div class="inv-detail-item"><dt>Serial Number</dt><dd>{{ $item->serial_number ?? '—' }}</dd></div>
@@ -202,11 +206,14 @@
                     <table class="inv-data-table">
                         <thead>
                             <tr>
-                                <th scope="col">Date</th>
+                                <th scope="col">Part Number</th>
+                                <th scope="col">Item</th>
                                 <th scope="col">Type</th>
                                 <th scope="col">Qty</th>
-                                <th scope="col">Stock Change</th>
-                                <th scope="col">Remarks</th>
+                                <th scope="col">Previous</th>
+                                <th scope="col">New</th>
+                                <th scope="col">Performed By</th>
+                                <th scope="col">Date/Time</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -218,17 +225,14 @@
                                 $badgeClass = $inbound ? 'inv-tx-badge--in' : ($outbound ? 'inv-tx-badge--out' : ($tx->type === 'adjustment' ? 'inv-tx-badge--adjust' : ($tx->type === 'borrow' ? 'inv-tx-badge--borrow' : '')));
                             @endphp
                             <tr>
-                                <td>{{ $tx->transaction_date?->format('M d, Y') }}</td>
+                                <td><span class="inv-part-number">{{ $item->part_number }}</span></td>
+                                <td>{{ $item->name }}</td>
                                 <td><span class="inv-tx-badge {{ $badgeClass }}">{{ $txLabel }}</span></td>
                                 <td>{{ $tx->quantity }}</td>
-                                <td>
-                                    <span class="inv-stock-change">
-                                        {{ $tx->quantity_before }}
-                                        <span class="inv-stock-change__arrow" aria-hidden="true">→</span>
-                                        {{ $tx->quantity_after }}
-                                    </span>
-                                </td>
-                                <td>{{ Str::limit($tx->remarks, 40) ?: '—' }}</td>
+                                <td>{{ $tx->quantity_before }}</td>
+                                <td>{{ $tx->quantity_after }}</td>
+                                <td>{{ $tx->performer?->displayName() ?? '—' }}</td>
+                                <td>{{ ph_datetime($tx->created_at) }}</td>
                             </tr>
                         @endforeach
                         </tbody>

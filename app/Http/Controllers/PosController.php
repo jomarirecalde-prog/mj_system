@@ -36,7 +36,7 @@ class PosController extends Controller
             ->when($term !== '', fn ($q) => $q->search($term))
             ->orderBy('name')
             ->limit(25)
-            ->get(['id', 'item_code', 'qr_code', 'name', 'unit', 'quantity', 'unit_cost', 'selling_price', 'reorder_level']);
+            ->get(['id', 'part_number', 'item_code', 'qr_code', 'name', 'unit', 'quantity', 'unit_cost', 'selling_price', 'reorder_level']);
 
         return $this->jsonSuccess([
             'items' => $items->map(fn (InventoryItem $item) => $this->posItemPayload($item)),
@@ -62,8 +62,11 @@ class PosController extends Controller
 
         $item = InventoryItem::query()
             ->where(function ($q) use ($payload) {
+                $normalized = strtoupper($payload);
                 $q->where('qr_code', $payload)
-                    ->orWhere('item_code', $payload);
+                    ->orWhere('part_number', $normalized)
+                    ->orWhere('item_code', $payload)
+                    ->orWhere('item_code', $normalized);
             })
             ->first();
 
@@ -104,6 +107,7 @@ class PosController extends Controller
     {
         return [
             'id' => $item->id,
+            'part_number' => $item->part_number,
             'item_code' => $item->item_code,
             'qr_code' => $item->qr_code,
             'name' => $item->name,

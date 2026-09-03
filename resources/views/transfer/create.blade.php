@@ -6,7 +6,7 @@
 <div class="page-header">
     <div>
         <h1>Transfer item</h1>
-        <p class="page-header__meta">{{ $item->item_code }} — current location: {{ $item->location?->name ?? 'Unassigned' }}</p>
+        <p class="page-header__meta">{{ $item->labeledName() }} — current location: {{ $item->location?->name ?? 'Unassigned' }}</p>
     </div>
     <a href="{{ route('inventory.show', $item) }}" class="btn btn--secondary">Cancel</a>
 </div>

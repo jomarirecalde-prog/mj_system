@@ -156,13 +156,14 @@ class PurchaseController extends Controller
         $inventoryItems = InventoryItem::query()
             ->active()
             ->orderBy('name')
-            ->get(['id', 'item_code', 'name', 'unit', 'unit_cost', 'quantity', 'inventory_type']);
+            ->get(['id', 'part_number', 'item_code', 'name', 'unit', 'unit_cost', 'quantity', 'inventory_type']);
 
         return [
             'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->get(),
             'inventoryItems' => $inventoryItems,
             'itemOptions' => $inventoryItems->map(fn ($i) => [
                 'id' => $i->id,
+                'part_number' => $i->part_number,
                 'code' => $i->item_code,
                 'name' => $i->name,
                 'stock' => $i->quantity,

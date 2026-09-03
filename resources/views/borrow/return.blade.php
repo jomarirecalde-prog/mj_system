@@ -7,7 +7,7 @@
 <div class="page-header">
     <div>
         <h1>Return borrowed item</h1>
-        <p class="page-header__meta">{{ $item?->item_code }} — borrowed by {{ $record->borrower_name }}</p>
+        <p class="page-header__meta">{{ $item?->labeledName() }} — borrowed by {{ $record->borrower_name }}</p>
     </div>
     <a href="{{ route('inventory.show', $item) }}" class="btn btn--secondary">Cancel</a>
 </div>

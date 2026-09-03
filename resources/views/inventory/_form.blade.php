@@ -2,6 +2,7 @@
     $item = $item ?? null;
     $isEdit = $item !== null;
     $invType = old('inventory_type', $item?->inventory_type ?? 'consumable');
+    $nextPartNumber = $nextPartNumber ?? null;
 @endphp
 
 <div class="inv-form">
@@ -18,6 +19,20 @@
         </header>
         <div class="inv-form-section__body">
             <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="part_number">Part Number @if($isEdit)<span class="req" aria-hidden="true">*</span>@endif</label>
+                    <input type="text" name="part_number" id="part_number" class="form-control @error('part_number') is-invalid @enderror" value="{{ old('part_number', $item?->part_number) }}" maxlength="100" autocomplete="off" {{ $isEdit ? 'required' : '' }} @error('part_number') aria-invalid="true" aria-describedby="part_number_hint part_number_error" @else aria-describedby="part_number_hint" @enderror placeholder="{{ $isEdit ? $item->part_number : 'e.g. OF-001' }}">
+                    <span class="form-hint" id="part_number_hint">
+                        @if($isEdit)
+                            Current Part Number: <strong>{{ $item->part_number }}</strong>. Changing this value must remain unique across all inventory items.
+                        @else
+                            Enter a unique part number such as <strong>OF-001</strong>. Leave blank to auto-generate ({{ $nextPartNumber ?? 'PN-000001' }}).
+                        @endif
+                    </span>
+                    @error('part_number')
+                        <span class="form-error" id="part_number_error" role="alert">{{ $message }}</span>
+                    @enderror
+                </div>
                 <div class="form-group">
                     <label class="form-label" for="item_code">Item Code <span class="req" aria-hidden="true">*</span></label>
                     <input type="text" name="item_code" id="item_code" class="form-control @error('item_code') is-invalid @enderror" value="{{ old('item_code', $item?->item_code) }}" required {{ $isEdit ? 'readonly aria-readonly="true"' : '' }} @error('item_code') aria-invalid="true" aria-describedby="item_code_error" @enderror placeholder="e.g. IT-2026-001">

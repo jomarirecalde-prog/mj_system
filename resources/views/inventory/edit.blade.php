@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit '.$item->item_code)
+@section('title', 'Edit '.$item->part_number)
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/inventory.css') }}">
@@ -15,7 +15,7 @@
                 Back to Item
             </a>
             <h1 class="inv-page-header__title">Edit Inventory Item</h1>
-            <p class="inv-page-header__desc">{{ $item->name }} · {{ $item->item_code }}</p>
+            <p class="inv-page-header__desc">{{ $item->name }} · {{ $item->part_number }}</p>
             <p class="inv-page-header__count" style="margin-top:0.5rem;font-size:0.82rem;">Last saved changes are reflected immediately after saving.</p>
         </div>
         <div class="inv-page-header__actions">

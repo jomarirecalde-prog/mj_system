@@ -27,7 +27,7 @@
                     New Item
                 </a>
             @endif
-            <a href="{{ route('inventory.export', request()->query()) }}" class="btn btn--secondary">
+            <a href="{{ route('inventory.export', request()->query()) }}" class="btn btn--secondary" id="inventory-export" data-export-url="{{ route('inventory.export') }}">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Export Excel
             </a>
@@ -39,9 +39,25 @@
         <div class="card__body">
             <form id="inventory-filters" method="get" action="{{ route('inventory.index') }}">
                 <div class="inv-filters__top">
+                    <div class="inv-category-filter">
+                        <label class="form-label" for="category_id">Category</label>
+                        <select name="category_id" id="category_id" class="form-select" aria-label="Filter by category">
+                            <option value="">All categories</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}" @selected(request('category_id') == $cat->id)>{{ $cat->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="inv-search">
-                        <svg class="inv-search__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        <input type="search" name="search" id="search" class="inv-search__input" value="{{ request('search') }}" placeholder="Search by code, name, serial number…" aria-label="Search inventory">
+                        <label class="form-label" for="search">Item</label>
+                        <div class="inv-search__field">
+                            <svg class="inv-search__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <input type="search" name="search" id="search" class="inv-search__input" value="{{ request('search') }}" placeholder="Name, brand, model, code…" aria-label="Search inventory item" aria-describedby="inv-search-scope">
+                        </div>
+                    </div>
+                    <div class="inv-part-filter">
+                        <label class="form-label" for="part_number_filter">Part Number</label>
+                        <input type="search" name="part_number" id="part_number_filter" class="form-control inv-part-filter__input" value="{{ request('part_number') }}" placeholder="e.g. PN-000001 or OF-001" aria-label="Search by part number" autocomplete="off">
                     </div>
                     <div class="inv-filters__actions">
                         <button type="button" class="btn btn--secondary inv-filters__toggle" id="inv-filters-toggle" aria-expanded="false" aria-controls="inv-filters-advanced inv-filters-mobile">
@@ -51,20 +67,13 @@
                         <button type="button" class="btn btn--ghost" id="inv-filters-clear">Clear Filters</button>
                     </div>
                 </div>
+                <p class="inv-search-scope" id="inv-search-scope" hidden></p>
+                <p class="inv-results-context" id="inv-results-context" hidden></p>
 
                 {{-- Desktop advanced filters --}}
                 <div class="inv-filters__advanced inv-filters__advanced-desktop" id="inv-filters-advanced">
                     <div class="inv-filters__advanced-inner">
                         <div class="inv-filters__grid">
-                            <div class="form-group">
-                                <label class="form-label" for="category_id">Category</label>
-                                <select name="category_id" id="category_id" class="form-select">
-                                    <option value="">All categories</option>
-                                    @foreach($categories as $cat)
-                                        <option value="{{ $cat->id }}" @selected(request('category_id') == $cat->id)>{{ $cat->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
                             <div class="form-group">
                                 <label class="form-label" for="location_id">Location</label>
                                 <select name="location_id" id="location_id" class="form-select">
@@ -179,10 +188,11 @@
     {{-- Table panel --}}
     <div class="card">
         <div class="card__body inv-table-panel" id="inventory-table-panel">
-            <div class="table-wrap inv-table-desktop">
+            <div class="table-wrap">
                 <table class="inv-data-table" id="inventory-table" style="display:none;" aria-label="Inventory items">
                     <thead>
                         <tr>
+                            <th scope="col">Part Number</th>
                             <th scope="col">Item</th>
                             <th scope="col">Category</th>
                             <th scope="col">Location</th>
@@ -197,13 +207,11 @@
                 </table>
             </div>
 
-            <div class="inv-cards" id="inventory-cards" style="display:none;" aria-label="Inventory items"></div>
-
             {{-- Empty state --}}
             <div class="inv-state" id="inventory-empty" hidden>
                 <svg class="inv-state__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                 <h2 class="inv-state__title">No inventory items found</h2>
-                <p class="inv-state__text">Try adjusting your filters or create a new inventory item.</p>
+                <p class="inv-state__text" id="inventory-empty-text">Try adjusting your filters or create a new inventory item.</p>
                 @if(auth()->user()->canModifyInventory())
                     <a href="{{ route('inventory.create') }}" class="btn btn--primary">Add New Item</a>
                 @endif
@@ -253,6 +261,7 @@
         canModify: @json(auth()->user()->canModifyInventory()),
         filterLabels: {
             category_id: 'Category',
+            part_number: 'Part Number',
             location_id: 'Location',
             inventory_type: 'Type',
             status: 'Status',

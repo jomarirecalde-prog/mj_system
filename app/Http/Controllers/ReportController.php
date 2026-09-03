@@ -95,14 +95,15 @@ class ReportController extends Controller
      */
     protected function inventoryReport(string $title): array
     {
-        $headers = ['Item Code', 'Name', 'Category', 'Location', 'Qty', 'Status', 'Condition', 'Value'];
+        $headers = ['Part Number', 'Item Code', 'Name', 'Category', 'Location', 'Qty', 'Status', 'Condition', 'Value'];
 
         $rows = InventoryItem::query()
             ->active()
             ->with(['category', 'location'])
-            ->orderBy('item_code')
+            ->orderBy('part_number')
             ->get()
             ->map(fn ($item) => [
+                $item->part_number,
                 $item->item_code,
                 $item->name,
                 $item->category?->name,
@@ -176,7 +177,7 @@ class ReportController extends Controller
      */
     protected function borrowedReport(string $title): array
     {
-        $headers = ['Item Code', 'Item Name', 'Borrower', 'Date Borrowed', 'Expected Return', 'Department'];
+        $headers = ['Part Number', 'Item Code', 'Item Name', 'Borrower', 'Date Borrowed', 'Expected Return', 'Department'];
 
         $rows = BorrowingRecord::query()
             ->where('status', 'borrowed')
@@ -184,6 +185,7 @@ class ReportController extends Controller
             ->latest('date_borrowed')
             ->get()
             ->map(fn ($record) => [
+                $record->item?->part_number,
                 $record->item?->item_code,
                 $record->item?->name,
                 $record->borrower_name,
@@ -200,7 +202,7 @@ class ReportController extends Controller
      */
     protected function lowStockReport(string $title): array
     {
-        $headers = ['Item Code', 'Name', 'Quantity', 'Reorder Level', 'Location'];
+        $headers = ['Part Number', 'Item Code', 'Name', 'Quantity', 'Reorder Level', 'Location'];
 
         $rows = InventoryItem::query()
             ->active()
@@ -210,6 +212,7 @@ class ReportController extends Controller
             ->orderBy('quantity')
             ->get()
             ->map(fn ($item) => [
+                $item->part_number,
                 $item->item_code,
                 $item->name,
                 $item->quantity,
@@ -225,15 +228,16 @@ class ReportController extends Controller
      */
     protected function conditionReport(string $title, string $condition): array
     {
-        $headers = ['Item Code', 'Name', 'Quantity', 'Status', 'Location'];
+        $headers = ['Part Number', 'Item Code', 'Name', 'Quantity', 'Status', 'Location'];
 
         $rows = InventoryItem::query()
             ->active()
             ->where('condition', $condition)
             ->with('location')
-            ->orderBy('item_code')
+            ->orderBy('part_number')
             ->get()
             ->map(fn ($item) => [
+                $item->part_number,
                 $item->item_code,
                 $item->name,
                 $item->quantity,
@@ -249,10 +253,10 @@ class ReportController extends Controller
      */
     protected function stockMovementReport(string $title, Request $request): array
     {
-        $headers = ['Date', 'Type', 'Item', 'Quantity', 'Before', 'After', 'Remarks'];
+        $headers = ['Date', 'Type', 'Part Number', 'Item', 'Quantity', 'Before', 'After', 'Performed By', 'Remarks'];
 
         $query = InventoryTransaction::query()
-            ->with('item')
+            ->with(['item', 'performer'])
             ->orderByDesc('transaction_date');
 
         if ($request->filled('from_date')) {
@@ -266,10 +270,12 @@ class ReportController extends Controller
         $rows = $query->limit(500)->get()->map(fn ($tx) => [
             $tx->transaction_date?->format('Y-m-d'),
             $tx->type,
-            $tx->item?->item_code,
+            $tx->item?->part_number,
+            $tx->item?->name,
             $tx->quantity,
             $tx->quantity_before,
             $tx->quantity_after,
+            $tx->performer?->displayName(),
             $tx->remarks,
         ]);
 
@@ -281,13 +287,14 @@ class ReportController extends Controller
      */
     protected function valuationReport(string $title): array
     {
-        $headers = ['Item Code', 'Name', 'Quantity', 'Unit Cost', 'Total Value'];
+        $headers = ['Part Number', 'Item Code', 'Name', 'Quantity', 'Unit Cost', 'Total Value'];
 
         $rows = InventoryItem::query()
             ->active()
             ->orderByDesc('total_value')
             ->get()
             ->map(fn ($item) => [
+                $item->part_number,
                 $item->item_code,
                 $item->name,
                 $item->quantity,
@@ -295,8 +302,8 @@ class ReportController extends Controller
                 $item->total_value,
             ]);
 
-        $total = $rows->sum(fn ($row) => (float) ($row[4] ?? 0));
-        $rows->push(['', 'TOTAL', '', '', $total]);
+        $total = $rows->sum(fn ($row) => (float) ($row[5] ?? 0));
+        $rows->push(['', '', 'TOTAL', '', '', $total]);
 
         return [$headers, $rows, $title];
     }
@@ -306,14 +313,15 @@ class ReportController extends Controller
      */
     protected function qrInventoryReport(string $title): array
     {
-        $headers = ['Item Code', 'QR Code', 'Name', 'Status', 'Location'];
+        $headers = ['Part Number', 'Item Code', 'QR Code', 'Name', 'Status', 'Location'];
 
         $rows = InventoryItem::query()
             ->active()
             ->with('location')
-            ->orderBy('qr_code')
+            ->orderBy('part_number')
             ->get()
             ->map(fn ($item) => [
+                $item->part_number,
                 $item->item_code,
                 $item->qr_code,
                 $item->name,

@@ -11,7 +11,7 @@
             <div class="form-group">
                 <label class="form-label" for="file">CSV file</label>
                 <input type="file" name="file" id="file" class="form-control" accept=".csv,.txt" required>
-                <span class="form-hint">Required columns include at least item_code and name. Max 10 MB.</span>
+                <span class="form-hint">Required columns include at least item_code and name. Optional: part_number. Max 10 MB.</span>
             </div>
             <button type="submit" class="btn btn--primary mt-2">Preview import</button>
         </form>
@@ -19,5 +19,5 @@
 </div>
 
 <div class="card mt-2"><div class="card__header"><h2 class="card__title">CSV template</h2></div>
-<div class="card__body"><pre style="font-size:0.85rem;overflow:auto;background:#f8fafc;padding:1rem;border-radius:8px;">item_code,name,description,quantity,unit,unit_cost,condition,status</pre></div></div>
+<div class="card__body"><pre style="font-size:0.85rem;overflow:auto;background:#f8fafc;padding:1rem;border-radius:8px;">part_number,item_code,name,description,quantity,unit,unit_cost,condition,status</pre></div></div>
 @endsection

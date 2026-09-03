@@ -237,7 +237,7 @@
                                 <td>
                                     @if($line->item)
                                         <a href="{{ route('inventory.show', $line->item) }}" class="pur-purchase-link">
-                                            <span class="pur-purchase-link__num">{{ $line->item->item_code }}</span>
+                                            <span class="pur-purchase-link__num">{{ $line->item->part_number }}</span>
                                             <span class="pur-purchase-link__sub">{{ $line->item->name }}</span>
                                         </a>
                                     @else
@@ -284,7 +284,7 @@
                         <article class="pur-show-line-card">
                             @if($line->item)
                                 <div class="pur-show-line-card__code">
-                                    <a href="{{ route('inventory.show', $line->item) }}">{{ $line->item->item_code }}</a>
+                                    <a href="{{ route('inventory.show', $line->item) }}">{{ $line->item->part_number }}</a>
                                 </div>
                                 <div class="pur-show-line-card__name">{{ $line->item->name }}</div>
                             @else

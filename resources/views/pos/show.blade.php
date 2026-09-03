@@ -176,7 +176,7 @@
                                 <td>
                                     @if($line->item)
                                         <a href="{{ route('inventory.show', $line->item) }}" class="pos-sale-link">
-                                            <span class="pos-sale-link__num">{{ $line->item->item_code }}</span>
+                                            <span class="pos-sale-link__num">{{ $line->item->part_number }}</span>
                                         </a>
                                         <div class="text-muted" style="font-size:0.82rem;">{{ $line->item->name }}</div>
                                     @else
@@ -198,7 +198,7 @@
                         <article class="pos-card">
                             @if($line->item)
                                 <a href="{{ route('inventory.show', $line->item) }}" class="pos-sale-link">
-                                    <span class="pos-sale-link__num">{{ $line->item->item_code }}</span>
+                                    <span class="pos-sale-link__num">{{ $line->item->part_number }}</span>
                                 </a>
                                 <div style="font-weight:600;margin:0.15rem 0 0.75rem;">{{ $line->item->name }}</div>
                             @else

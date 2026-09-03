@@ -152,7 +152,7 @@
                              data-current-stock="{{ $currentStock }}"
                              data-unit="{{ $unit }}">
                             <div class="pur-receive-item__name">{{ $line->item?->name ?? '—' }}</div>
-                            <div class="pur-receive-item__code">{{ $line->item?->item_code ?? '—' }}</div>
+                            <div class="pur-receive-item__code">{{ $line->item?->part_number ?? '—' }}</div>
 
                             <dl class="pur-receive-stats">
                                 <div>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\PartNumber;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,7 @@ class InventoryItem extends Model
      */
     protected $fillable = [
         'item_code',
+        'part_number',
         'qr_code',
         'name',
         'description',
@@ -217,15 +219,49 @@ class InventoryItem extends Model
             return $query;
         }
 
-        $term = '%'.trim($term).'%';
+        $like = '%'.addcslashes(trim($term), '%_\\').'%';
 
-        return $query->where(function (Builder $q) use ($term) {
-            $q->where('name', 'like', $term)
-                ->orWhere('item_code', 'like', $term)
-                ->orWhere('qr_code', 'like', $term)
-                ->orWhere('serial_number', 'like', $term)
-                ->orWhere('brand', 'like', $term)
-                ->orWhere('model', 'like', $term);
+        return $query->where(function (Builder $q) use ($like) {
+            $q->where('name', 'like', $like)
+                ->orWhere('item_code', 'like', $like)
+                ->orWhere('qr_code', 'like', $like)
+                ->orWhere('serial_number', 'like', $like)
+                ->orWhere('brand', 'like', $like)
+                ->orWhere('model', 'like', $like);
         });
+    }
+
+    /**
+     * @param  Builder<InventoryItem>  $query
+     * @return Builder<InventoryItem>
+     */
+    public function scopePartNumber(Builder $query, ?string $term): Builder
+    {
+        if ($term === null || trim($term) === '') {
+            return $query;
+        }
+
+        $like = '%'.addcslashes(trim($term), '%_\\').'%';
+
+        return $query->where('part_number', 'like', $like);
+    }
+
+    public function brandModelLabel(): string
+    {
+        return trim(implode(' ', array_filter([(string) $this->brand, (string) $this->model], fn ($value) => $value !== '')));
+    }
+
+    public function labeledName(): string
+    {
+        $identifier = $this->part_number ?: $this->item_code;
+
+        return trim($identifier.' — '.$this->name);
+    }
+
+    public function setPartNumberAttribute(?string $value): void
+    {
+        $normalized = PartNumber::normalize($value);
+
+        $this->attributes['part_number'] = $normalized === '' ? null : $normalized;
     }
 }

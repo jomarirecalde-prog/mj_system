@@ -99,7 +99,7 @@
           '<button type="button" class="pos-result' + (disabled ? ' is-disabled' : '') + '" data-id="' + item.id + '"' + (disabled ? ' disabled' : '') + '>' +
           '<div class="pos-result__top">' +
           '<div><div class="pos-result__name">' + escapeHtml(item.name) + '</div>' +
-          '<div class="pos-result__meta">' + escapeHtml(item.item_code) + '</div></div>' +
+          '<div class="pos-result__meta">' + escapeHtml(item.part_number || item.item_code) + '</div></div>' +
           '<span class="pos-result__price">' + money(item.selling_price) + ' / ' + escapeHtml(item.unit) + '</span></div>' +
           '<div class="pos-result__stock">' + stockHtml +
           (disabled ? '' : '<span class="pos-result__add">+ Add</span>') +
@@ -134,6 +134,7 @@
         cart.set(item.id, {
           id: item.id,
           name: item.name,
+          part_number: item.part_number,
           item_code: item.item_code,
           unit: item.unit,
           available: available,
@@ -184,7 +185,7 @@
         el.innerHTML =
           '<div class="pos-cart-item__head">' +
           '<div><div class="pos-cart-item__name">' + escapeHtml(line.name) + '</div>' +
-          '<div class="pos-cart-item__code">' + escapeHtml(line.item_code) + '</div></div>' +
+          '<div class="pos-cart-item__code">' + escapeHtml(line.part_number || line.item_code) + '</div></div>' +
           '<button type="button" class="pos-cart-item__remove cart-remove" data-id="' + line.id + '" aria-label="Remove ' + escapeHtml(line.name) + '">' +
           '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button></div>' +
           '<dl class="pos-cart-item__grid">' +

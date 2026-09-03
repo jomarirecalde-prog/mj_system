@@ -12,6 +12,7 @@ use App\Models\Department;
 use App\Models\Supplier;
 use App\Models\User;
 use App\Services\InventoryService;
+use App\Support\PartNumber;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -66,7 +67,7 @@ class InventoryController extends Controller
             'creator',
             'history' => fn ($q) => $q->with('user')->latest('occurred_at')->limit(20),
             'borrowings' => fn ($q) => $q->latest()->limit(10),
-            'transactions' => fn ($q) => $q->latest()->limit(10),
+            'transactions' => fn ($q) => $q->with('performer')->latest()->limit(10),
             'transfers' => fn ($q) => $q->latest()->limit(10),
         ]);
 
@@ -124,6 +125,7 @@ class InventoryController extends Controller
             'departments' => Department::query()->where('is_active', true)->orderBy('name')->get(),
             'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->get(),
             'users' => User::query()->where('status', 'active')->orderBy('name')->get(),
+            'nextPartNumber' => PartNumber::peekNext(),
         ];
     }
 
@@ -133,8 +135,7 @@ class InventoryController extends Controller
     protected function filteredQuery(Request $request)
     {
         $query = InventoryItem::query()
-            ->with(['category', 'location', 'department'])
-            ->search($request->input('search'));
+            ->with(['category', 'location', 'department']);
 
         if (! $request->boolean('include_archived')) {
             $query->active();
@@ -143,6 +144,9 @@ class InventoryController extends Controller
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->input('category_id'));
         }
+
+        $query->search($request->input('search'))
+            ->partNumber($request->input('part_number'));
 
         if ($request->filled('location_id')) {
             $query->where('location_id', $request->input('location_id'));
@@ -168,7 +172,7 @@ class InventoryController extends Controller
 
         $sort = $request->input('sort', 'created_at');
         $direction = $request->input('direction', 'desc') === 'asc' ? 'asc' : 'desc';
-        $allowedSorts = ['name', 'item_code', 'quantity', 'status', 'created_at', 'total_value'];
+        $allowedSorts = ['name', 'item_code', 'part_number', 'quantity', 'status', 'created_at', 'total_value'];
 
         if (! in_array($sort, $allowedSorts, true)) {
             $sort = 'created_at';

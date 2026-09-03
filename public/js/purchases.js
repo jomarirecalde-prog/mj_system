@@ -245,7 +245,7 @@
             '" data-cost="' +
             o.cost +
             '">' +
-            escapeHtml(o.code) +
+            escapeHtml(o.part_number || o.code) +
             ' — ' +
             escapeHtml(o.name) +
             ' (stock: ' +

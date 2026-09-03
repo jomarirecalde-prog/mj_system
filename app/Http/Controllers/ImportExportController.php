@@ -72,6 +72,7 @@ class ImportExportController extends Controller
 
             $this->inventoryService->createItem([
                 'item_code' => $row['item_code'],
+                'part_number' => $row['part_number'] ?? null,
                 'name' => $row['name'],
                 'description' => $row['description'] ?? null,
                 'inventory_type' => $row['inventory_type'] ?? InventoryItem::TYPE_CONSUMABLE,

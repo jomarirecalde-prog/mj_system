@@ -82,7 +82,10 @@
                 <tbody>
                 @forelse($lowStockItems as $row)
                     <tr>
-                        <td><a href="{{ route('inventory.show', $row) }}">{{ $row->name }}</a></td>
+                        <td>
+                            <a href="{{ route('inventory.show', $row) }}">{{ $row->name }}</a>
+                            <div class="text-muted" style="font-size:0.8rem;">{{ $row->part_number }}</div>
+                        </td>
                         <td>{{ $row->quantity }} {{ $row->unit }}</td>
                         <td>{{ $row->reorder_level }}</td>
                         <td><a href="{{ route('purchases.create') }}" class="btn btn--ghost btn--sm">Reorder</a></td>
@@ -118,7 +121,7 @@
                     <tr>
                         <td>
                             <a href="{{ route('inventory.show', $row['item']) }}">{{ $row['item']->name }}</a>
-                            <div class="text-muted" style="font-size:0.8rem;">{{ $row['item']->item_code }}</div>
+                            <div class="text-muted" style="font-size:0.8rem;">{{ $row['item']->part_number }}</div>
                         </td>
                         <td class="text-right">{{ number_format($row['beginning'], 2) }}</td>
                         <td class="text-right">+{{ number_format($row['purchased'], 2) }}</td>
@@ -163,11 +166,11 @@
                 <div class="empty-state"><p class="empty-state__title">No items yet</p></div>
             @else
                 <table class="data-table">
-                    <thead><tr><th>Code</th><th>Name</th><th>Qty</th></tr></thead>
+                    <thead><tr><th>Part Number</th><th>Name</th><th>Qty</th></tr></thead>
                     <tbody>
                     @foreach($recentItems as $row)
                         <tr>
-                            <td><a href="{{ route('inventory.show', $row) }}">{{ $row->item_code }}</a></td>
+                            <td><a href="{{ route('inventory.show', $row) }}">{{ $row->part_number }}</a></td>
                             <td>{{ $row->name }}</td>
                             <td>{{ $row->quantity }}</td>
                         </tr>
@@ -189,7 +192,7 @@
                     @foreach($recentTransactions as $tx)
                         <tr>
                             <td>{{ \App\Support\InventoryTransactionType::label($tx->type) }}</td>
-                            <td>@if($tx->item)<a href="{{ route('inventory.show', $tx->item) }}">{{ $tx->item->item_code }}</a>@else — @endif</td>
+                            <td>@if($tx->item)<a href="{{ route('inventory.show', $tx->item) }}">{{ $tx->item->part_number }}</a>@else — @endif</td>
                             <td>{{ $tx->quantity }}</td>
                         </tr>
                     @endforeach
@@ -210,7 +213,7 @@
                     @foreach($recentScans as $scan)
                         <tr>
                             <td><span class="badge {{ $scan->success ? 'badge--available' : 'badge--out' }}">{{ $scan->success ? 'OK' : 'Fail' }}</span></td>
-                            <td>{{ $scan->item?->item_code ?? '—' }}</td>
+                            <td>{{ $scan->item?->part_number ?? '—' }}</td>
                             <td class="text-muted">{{ ph_datetime($scan->created_at) }}</td>
                         </tr>
                     @endforeach
