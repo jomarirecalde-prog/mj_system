@@ -3,8 +3,31 @@
 
   const csrfToken = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
+  function resolveUrl(url) {
+    if (!url) return url;
+    if (/^https?:\/\//i.test(url)) return url;
+
+    const base = document.querySelector('meta[name="app-base"]')?.content;
+    if (!base) {
+      return new URL(url, window.location.href).href;
+    }
+
+    const baseUrl = new URL(base);
+
+    if (url.startsWith('/')) {
+      const basePath = baseUrl.pathname.replace(/\/$/, '');
+      if (basePath && basePath !== '/') {
+        return baseUrl.origin + basePath + url;
+      }
+      return baseUrl.origin + url;
+    }
+
+    return new URL(url, base.endsWith('/') ? base : base + '/').href;
+  }
+
   window.App = {
     csrfToken,
+    resolveUrl,
     toast,
     confirmDialog,
     fetchJson,
@@ -87,7 +110,7 @@
       headers['Content-Type'] = 'application/json';
       options.body = JSON.stringify(options.body);
     }
-    const response = await fetch(url, Object.assign({}, options, { headers }));
+    const response = await fetch(resolveUrl(url), Object.assign({}, options, { headers }));
     let data = null;
     const ct = response.headers.get('content-type') || '';
     if (ct.includes('application/json')) {
@@ -273,7 +296,7 @@
       if (e.key === 'Enter') {
         const q = input.value.trim();
         if (q) {
-          window.location.href = input.dataset.searchUrl + '?search=' + encodeURIComponent(q);
+          window.location.href = resolveUrl(input.dataset.searchUrl) + '?search=' + encodeURIComponent(q);
         }
       }
       if (e.key === 'Escape') {

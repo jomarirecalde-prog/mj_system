@@ -1,6 +1,9 @@
 (function () {
   'use strict';
 
+  function appUrl(url) {
+    return window.App?.resolveUrl?.(url) ?? url;
+  }
   function escapeHtml(str) {
     return String(str)
       .replace(/&/g, '&amp;')
@@ -486,7 +489,7 @@
   }
 
   function initLiveAttendance(config) {
-    const liveUrl = config.url;
+    const liveUrl = appUrl(config.url);
     const clockEl = document.getElementById(config.clockId);
     const tbody = config.tableBodyId ? document.getElementById(config.tableBodyId) : null;
     const cardsEl = config.cardsId ? document.getElementById(config.cardsId) : null;
@@ -597,7 +600,7 @@
     const tableWrap = document.getElementById('dtr-table-wrap');
     if (!form || !tbody) return;
 
-    const baseUrl = form.getAttribute('action') || window.location.pathname;
+    const baseUrl = appUrl(form.getAttribute('action') || window.location.pathname);
     let timer = null;
     let abortCtrl = null;
     let reqId = 0;

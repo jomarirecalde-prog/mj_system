@@ -370,7 +370,7 @@
   }
 
   async function navigateTo(url, options = {}) {
-    const absoluteUrl = new URL(url, window.location.origin).href;
+    const absoluteUrl = window.App?.resolveUrl?.(url) ?? new URL(url, window.location.href).href;
     const currentUrl = window.location.href;
 
     if (absoluteUrl === currentUrl && !options.force) return;
