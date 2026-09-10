@@ -39,7 +39,7 @@ jobs:
 
       - name: Build frontend assets
         run: |
-          npm ci
+          npm ci --no-audit --no-fund
           npm run build
 
       - name: Stage release files
