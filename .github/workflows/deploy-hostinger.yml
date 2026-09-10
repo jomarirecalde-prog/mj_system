@@ -1,0 +1,87 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-hostinger
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, xml, bcmath, gd, zip, pdo_mysql, fileinfo, intl
+          coverage: none
+          tools: composer
+
+      - name: Install PHP dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Build frontend assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Stage release files
+        run: |
+          mkdir -p staging
+          rsync -a \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude 'staging/' \
+            --exclude '.env' \
+            --exclude '.env.*' \
+            --exclude 'node_modules/' \
+            --exclude 'tests/' \
+            --exclude 'storage/' \
+            --exclude '.cursor/' \
+            --exclude '.agents/' \
+            --exclude '.vscode/' \
+            --exclude '.idea/' \
+            --exclude 'database/*.sqlite' \
+            ./ staging/
+
+      - name: Upload to Hostinger
+        uses: appleboy/scp-action@v1
+        with:
+          host: 109.106.254.155
+          username: u899628465
+          port: 65002
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          source: "staging/*"
+          target: /home/u899628465/juninventory
+          overwrite: true
+          strip_components: 1
+          timeout: 60s
+          command_timeout: 20m
+
+      - name: Run Laravel setup on Hostinger
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: 109.106.254.155
+          username: u899628465
+          port: 65002
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          script_stop: true
+          command_timeout: 10m
+          script: bash /home/u899628465/juninventory/scripts/hostinger-deploy.sh
