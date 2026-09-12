@@ -1,8 +1,36 @@
 (function () {
   'use strict';
 
-  var SW_URL = '/service-worker.js';
-  var SW_SCOPE = '/';
+  function getAppBase() {
+    var link = document.querySelector('link[rel="manifest"]');
+    if (link && link.href) {
+      try {
+        var manifestUrl = new URL(link.href, window.location.href);
+        if (/\/site\.webmanifest$/i.test(manifestUrl.pathname)) {
+          return manifestUrl.href.replace(/site\.webmanifest(?:\?.*)?$/i, '');
+        }
+        return manifestUrl.origin + manifestUrl.pathname.replace(/[^/]+$/, '');
+      } catch (e) {
+        /* fall through */
+      }
+    }
+
+    var script = document.querySelector('script[src*="pwa.js"]');
+    if (script && script.src) {
+      try {
+        return new URL('../', new URL(script.src, window.location.href)).href;
+      } catch (e) {
+        /* fall through */
+      }
+    }
+
+    return new URL('./', window.location.href).href;
+  }
+
+  var APP_BASE = getAppBase();
+  var SW_URL = new URL('service-worker.js', APP_BASE).href;
+  var SW_SCOPE = new URL('./', APP_BASE).href;
+  var MANIFEST_URL = new URL('site.webmanifest', APP_BASE).href;
   var UPDATE_TOAST_ID = 'pwa-update-toast';
 
   var deferredInstallPrompt = null;
@@ -99,7 +127,7 @@
   }
 
   function isManifestReachable() {
-    return fetch('/site.webmanifest', { credentials: 'same-origin', redirect: 'manual' })
+    return fetch(MANIFEST_URL, { credentials: 'same-origin', redirect: 'manual' })
       .then(function (response) {
         if (response.type === 'opaqueredirect' || response.status === 0) return false;
         if (response.status === 401 || response.status === 403) return false;

@@ -265,7 +265,7 @@
 @endforeach
 
 {{-- Create modal --}}
-<dialog class="qs-modal" id="create-station-modal">
+<dialog class="qs-modal" id="create-station-modal" data-qs-trigger="#open-create-station">
     <form method="post" action="{{ route('admin.qr-stations.store') }}" class="qs-modal__form" data-qs-submit>
         @csrf
         <div class="qs-modal__header">
@@ -310,19 +310,22 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('[data-qs-trigger-modal]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            document.getElementById(btn.dataset.qsTriggerModal)?.showModal();
-        });
-    });
+(function () {
+    function initQrStationsIndex() {
+        if (!window.QrStations) return;
+        window.QrStations.initIndex({
+            formTemplate: @json($editFormTemplate),
+            updateBaseUrl: @json(url('admin/qr-stations')),
+            openCreateOnError: @json($errors->any() && !request()->has('edit')),
+            editId: @json(request('edit')),
+        }, document.getElementById('page-content'));
+    }
 
-    window.QrStations.initIndex({
-        formTemplate: @json($editFormTemplate),
-        updateBaseUrl: @json(url('admin/qr-stations')),
-        openCreateOnError: @json($errors->any() && !request()->has('edit')),
-        editId: @json(request('edit')),
-    });
-});
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initQrStationsIndex);
+    } else {
+        initQrStationsIndex();
+    }
+})();
 </script>
 @endpush

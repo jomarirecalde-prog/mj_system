@@ -347,12 +347,20 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelector('.js-qs-edit-inline')?.addEventListener('click', function () {
-        window.location.href = @json(route('admin.qr-stations.index')) + '?edit={{ $station->id }}';
-    });
+(function () {
+    function initQrStationShow() {
+        document.querySelector('.js-qs-edit-inline')?.addEventListener('click', function () {
+            window.location.href = @json(route('admin.qr-stations.index')) + '?edit={{ $station->id }}';
+        });
 
-    window.QrStations.initShow();
-});
+        window.QrStations?.initShow();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initQrStationShow);
+    } else {
+        initQrStationShow();
+    }
+})();
 </script>
 @endpush

@@ -2,8 +2,8 @@
     "name": "QR Inventory and Attendance System",
     "short_name": "QR System",
     "description": "Inventory, attendance, DTR, and QR management system.",
-    "start_url": "/",
-    "scope": "/",
+    "start_url": "./",
+    "scope": "./",
     "display": "standalone",
     "orientation": "any",
     "theme_color": "#0f172a",
@@ -76,28 +76,28 @@
             "name": "Dashboard",
             "short_name": "Dashboard",
             "description": "Open the main dashboard",
-            "url": "/",
+            "url": "./",
             "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
         },
         {
             "name": "Scan QR",
             "short_name": "Scan QR",
             "description": "Inventory QR scanner",
-            "url": "/scan",
+            "url": "./scan",
             "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
         },
         {
             "name": "Attendance Scanner",
             "short_name": "Scanner",
             "description": "QR attendance scanner",
-            "url": "/attendance/scanner",
+            "url": "./attendance/scanner",
             "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
         },
         {
             "name": "Today's Attendance",
             "short_name": "Today",
             "description": "View today's attendance",
-            "url": "/attendance/today",
+            "url": "./attendance/today",
             "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
         }
     ]

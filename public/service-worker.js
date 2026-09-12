@@ -12,25 +12,43 @@
  * localhost is treated as a secure context for development.
  */
 
-const CACHE_VERSION = 'qr-system-v2';
+const CACHE_VERSION = 'qr-system-v3';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
+/** Directory of this worker — works at domain root and in a subdirectory (e.g. /inventory_system/public/). */
+const APP_BASE_URL = new URL('./', self.location.href);
+const APP_BASE_PATH = APP_BASE_URL.pathname.endsWith('/')
+  ? APP_BASE_URL.pathname
+  : `${APP_BASE_URL.pathname}/`;
+
+function appUrl(path) {
+  return new URL(String(path).replace(/^\//, ''), APP_BASE_URL).href;
+}
+
+function appPathname(url) {
+  const pathname = new URL(url, APP_BASE_URL).pathname;
+  if (APP_BASE_PATH !== '/' && pathname.startsWith(APP_BASE_PATH)) {
+    return `/${pathname.slice(APP_BASE_PATH.length)}`;
+  }
+  return pathname;
+}
+
 /** Application shell — safe to precache (no user-specific data). */
 const PRECACHE_URLS = [
-  '/offline.html',
-  '/css/app.css',
-  '/css/landing.css',
-  '/js/app.js',
-  '/js/navigation.js',
-  '/js/landing.js',
-  '/js/pwa.js',
-  '/favicon.png',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/apple-touch-icon.png',
-  '/site.webmanifest',
-];
+  'offline.html',
+  'css/app.css',
+  'css/landing.css',
+  'js/app.js',
+  'js/navigation.js',
+  'js/landing.js',
+  'js/pwa.js',
+  'favicon.png',
+  'icons/icon-192.png',
+  'icons/icon-512.png',
+  'icons/apple-touch-icon.png',
+  'site.webmanifest',
+].map((path) => appUrl(path));
 
 const STATIC_PATH_PREFIXES = ['/css/', '/js/', '/icons/', '/fonts/'];
 const STATIC_EXTENSIONS = ['.css', '.js', '.png', '.jpg', '.jpeg', '.webp', '.svg', '.woff', '.woff2', '.ttf', '.ico', '.webmanifest'];
@@ -56,7 +74,7 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const target = event.notification.data?.url || '/';
+  const target = event.notification.data?.url || APP_BASE_PATH;
   event.waitUntil(clients.openWindow(target));
 });
 
@@ -94,13 +112,13 @@ self.addEventListener('message', (event) => {
 });
 
 function isStaticAsset(url) {
-  const pathname = new URL(url).pathname;
+  const pathname = appPathname(url);
   if (STATIC_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return true;
   return STATIC_EXTENSIONS.some((ext) => pathname.endsWith(ext));
 }
 
 function isNetworkOnly(url, request) {
-  const pathname = new URL(url).pathname;
+  const pathname = appPathname(url);
   if (NETWORK_ONLY_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return true;
   if (request.method !== 'GET') return true;
   // PJAX partial navigation — always fetch fresh content
@@ -116,8 +134,7 @@ function isNavigationRequest(request) {
 }
 
 function isBypassedPath(url) {
-  const pathname = new URL(url).pathname;
-  return BYPASS_SW_PATHS.includes(pathname);
+  return BYPASS_SW_PATHS.includes(appPathname(url));
 }
 
 function isCrossOriginRedirect(request, response) {
@@ -154,7 +171,7 @@ async function networkFirstNavigation(request) {
     // Do not cache HTML navigation responses — prevents stale/sensitive page exposure
     return response;
   } catch (error) {
-    const offline = await caches.match('/offline.html');
+    const offline = await caches.match(appUrl('offline.html'));
     if (offline) return offline;
     return Response.error();
   }

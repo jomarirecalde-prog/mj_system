@@ -27,21 +27,21 @@
     });
   }
 
-  function initDialogModals() {
-    document.querySelectorAll('dialog.qs-modal').forEach(function (dialog) {
+  function initDialogModals(root) {
+    (root || document).querySelectorAll('dialog.qs-modal').forEach(function (dialog) {
       const triggerSelector = dialog.dataset.qsTrigger;
-      if (!triggerSelector) return;
-
       let lastTrigger = null;
 
-      document.querySelectorAll(triggerSelector).forEach(function (trigger) {
-        trigger.addEventListener('click', function () {
-          lastTrigger = trigger;
-          dialog.showModal();
-          const focusTarget = dialog.querySelector('[data-qs-modal-focus]') || dialog.querySelector('.qs-modal__close');
-          focusTarget?.focus();
+      if (triggerSelector) {
+        (root || document).querySelectorAll(triggerSelector).forEach(function (trigger) {
+          trigger.addEventListener('click', function () {
+            lastTrigger = trigger;
+            dialog.showModal();
+            const focusTarget = dialog.querySelector('[data-qs-modal-focus]') || dialog.querySelector('.qs-modal__close');
+            focusTarget?.focus();
+          });
         });
-      });
+      }
 
       dialog.querySelectorAll('[data-qs-close-modal]').forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -59,6 +59,14 @@
       dialog.addEventListener('cancel', function (e) {
         e.preventDefault();
         dialog.close();
+      });
+    });
+  }
+
+  function initTriggerModals(root) {
+    (root || document).querySelectorAll('[data-qs-trigger-modal]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.getElementById(btn.dataset.qsTriggerModal)?.showModal();
       });
     });
   }
@@ -213,19 +221,17 @@
   }
 
   window.QrStations = {
-    initIndex: function (config) {
-      initFormSubmit(document);
-      initDialogModals();
+    initIndex: function (config, root) {
+      root = root || document;
+      initFormSubmit(root);
+      initDialogModals(root);
+      initTriggerModals(root);
       initActionMenus();
       initMobileFilters();
       initPasswordFields(document);
-      initStationCodeUppercase(document);
+      initStationCodeUppercase(root);
 
-      document.getElementById('open-create-station')?.addEventListener('click', function () {
-        document.getElementById('create-station-modal')?.showModal();
-      });
-
-      document.querySelectorAll('.js-qs-edit-station').forEach(function (btn) {
+      root.querySelectorAll('.js-qs-edit-station').forEach(function (btn) {
         btn.addEventListener('click', function () {
           const station = JSON.parse(btn.dataset.station);
           const editForm = document.getElementById('edit-station-form');
